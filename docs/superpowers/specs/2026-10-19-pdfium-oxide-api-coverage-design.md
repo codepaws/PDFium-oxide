@@ -24,7 +24,24 @@ This definition deliberately does not mean that every C function has an idiomati
 | Render pages and access pixels | Implemented | Rendering, owned snapshots, and a borrowed pixel view whose guard prevents crate-mediated mutation while alive. |
 | Save documents | Implemented | Save to a Rust writer with callback and native failure propagation. |
 | Insert page text | Implemented | Validated in-place text insertion, with native object ownership handled correctly and no rollback guarantee. |
-| Inspect text segments | **This design** | `TextPage::segments()` returns owned text and bounds for PDFium's merged text rectangles. |
+| Inspect text segments | Implemented | `TextPage::segments()` returns owned text and page-space bounds for PDFium's merged text rectangles. Host tests passed with `cargo test --offline --all-features`; the pinned Windows x64 default native workflow passed with `cargo xtask test-runtime-smoke --profile default`. |
+
+The text-segment native result covers the Windows x64 default profile. The ordinary host suite ignores native tests; its passing result is separate from the native workflow result.
+
+### Raw function-name reach evidence
+
+`cargo xtask audit-bindings --pdfium-source D:/projects/detect/PDFium-oxide/target/pdfium-source-pinned` passed against pinned PDFium commit `f51279699cb59754d1f49aef10eb8e825fe56532` on Windows x64. Counts below are per generated configuration and follow successful header/dispatch, header/manifest, manifest/wrapper, and provenance comparisons.
+
+| Target/profile | Header declarations | Public raw wrappers | Coordinator-owned lifecycle functions |
+| --- | ---: | ---: | ---: |
+| Linux ARM64 default | 469 | 466 | 3 |
+| Linux ARM64 V8/XFA | 474 | 471 | 3 |
+| Linux x64 default | 469 | 466 | 3 |
+| Linux x64 V8/XFA | 474 | 471 | 3 |
+| Windows x64 default | 471 | 468 | 3 |
+| Windows x64 V8/XFA | 476 | 473 | 3 |
+
+These counts establish function-name reach through the generated raw layer. They do not establish ABI type or constant parity or native behavior for every function.
 
 ### Deferred from this coverage target
 

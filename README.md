@@ -47,6 +47,10 @@ assert_eq!(snapshot.stride, snapshot.width as usize * 4);
 
 The native workflow integration test is ignored during ordinary Cargo runs. The xtask smoke command runs it in a separate process from the loader-only smoke test and uses the authored fixtures in `tests/fixtures/`.
 
+### Inspecting text segments
+
+`TextPage::segments()` returns `Vec<TextSegment>` with owned strings and `f64` bounds (`left`, `bottom`, `right`, `top`) in page space, measured in PDF points. Each segment corresponds to a rectangle grouped by PDFium's line and text-style rules. The method preserves PDFium's rectangle order and coordinates; it does not split the results into its own lines or words. The returned values remain usable after the text page, page, and document are dropped.
+
 ### Inserting page text
 
 `Page::insert_text` adds text at a `Point` in PDF page coordinates using a `TextStyle` with one of PDF's 14 standard fonts, a positive font size, and an RGBA fill color. It changes the native page in place. Safe crate operations are serialized across its complete sequence, so a concurrent save runs before or after the insertion. Save the owning document with `Document::save_to_writer` to persist the change. An error after insertion may leave the page changed; the operation has no rollback guarantee.
