@@ -736,9 +736,14 @@ fn dispatch_symbols(source: &str) -> Result<Vec<String>, Box<dyn Error>> {
         .ok_or("dispatch table missing")?;
     let body_start = source[start..].find('{').unwrap() + start + 1;
     let end = source[body_start..]
-        .find("\n}")
-        .ok_or("dispatch table not closed")?
-        + body_start;
+        .split_inclusive('\n')
+        .scan(0, |offset, line| {
+            let line_start = *offset;
+            *offset += line.len();
+            Some((line_start, line))
+        })
+        .find_map(|(offset, line)| (line.trim() == "}").then_some(body_start + offset))
+        .ok_or("dispatch table not closed")?;
     let mut symbols = Vec::new();
     for line in source[body_start..end].lines() {
         let Some(rest) = line.trim().strip_prefix("pub ") else {
@@ -755,6 +760,18 @@ fn dispatch_symbols(source: &str) -> Result<Vec<String>, Box<dyn Error>> {
         return Err("dispatch table contains duplicate symbols".into());
     }
     Ok(symbols)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::dispatch_symbols;
+
+    #[test]
+    fn dispatch_table_parser_accepts_indented_closing_brace() {
+        let source = "pub(crate) struct pdfium {\n    pub FPDF_InitLibrary: fn(),\n    }\n";
+
+        assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
+    }
 }
 
 pub fn fetch_source(root: &Path, args: &[String]) -> Result<(), Box<dyn Error>> {
