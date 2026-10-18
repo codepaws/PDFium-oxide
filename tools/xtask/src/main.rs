@@ -48,14 +48,15 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
 fn create_fixture(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
     use std::io::Write;
-    let content = b"BT /F1 18 Tf 20 70 Td (PDFium Workflow Fixture) Tj ET\n1 0 0 rg 20 15 40 30 re f\n0 0 1 rg 80 15 40 30 re f\n/GS1 gs 0 1 0 rg 140 15 40 30 re f\n";
+    let content = b"BT /F1 18 Tf 20 70 Td (PDFium Workflow Fixture) Tj ET\nBT /F1 12 Tf 20 48 Td (Normal ) Tj /F2 12 Tf (Bold) Tj ET\nBT /F1 12 Tf 20 32 Td (Second line) Tj ET\n1 0 0 rg 20 15 40 30 re f\n0 0 1 rg 80 15 40 30 re f\n/GS1 gs 0 1 0 rg 140 15 40 30 re f\n";
     let objects: Vec<Vec<u8>> = vec![
         b"<< /Type /Catalog /Pages 2 0 R >>".to_vec(),
         b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>".to_vec(),
-        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 100] /Resources << /Font << /F1 4 0 R >> /ExtGState << /GS1 6 0 R >> >> /Contents 5 0 R >>".to_vec(),
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 100] /Resources << /Font << /F1 4 0 R /F2 7 0 R >> /ExtGState << /GS1 6 0 R >> >> /Contents 5 0 R >>".to_vec(),
         b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>".to_vec(),
         [format!("<< /Length {} >>\nstream\n", content.len()).as_bytes(), content, b"endstream"].concat(),
         b"<< /Type /ExtGState /ca 0.5 /CA 0.5 >>".to_vec(),
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>".to_vec(),
     ];
     let mut pdf = b"%PDF-1.7\n%\xe2\xe3\xcf\xd3\n".to_vec();
     let mut offsets = vec![0_usize];
