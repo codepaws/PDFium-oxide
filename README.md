@@ -49,7 +49,7 @@ The native workflow integration test is ignored during ordinary Cargo runs. The 
 
 ### Inspecting text segments
 
-`TextPage::segments()` returns `Vec<TextSegment>` with owned strings and `f64` bounds (`left`, `bottom`, `right`, `top`) in page space, measured in PDF points. Each segment corresponds to a rectangle grouped by PDFium's line and text-style rules. The method preserves PDFium's rectangle order and coordinates; it does not split the results into its own lines or words. The returned values remain usable after the text page, page, and document are dropped.
+`TextPage::segments()` returns `Result<Vec<TextSegment>, PdfiumError>`. Each segment contains an owned string and `f64` bounds (`left`, `bottom`, `right`, `top`) in page space, measured in PDF points. Each segment corresponds to a rectangle grouped by PDFium's line and text-style rules. The method preserves PDFium's rectangle order and coordinates; it does not split the results into its own lines or words. The returned values remain usable after the text page, page, and document are dropped.
 
 ### Inserting page text
 
