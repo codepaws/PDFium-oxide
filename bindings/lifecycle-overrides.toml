@@ -1,0 +1,19 @@
+[[lifecycle]]
+name = "FPDF_GetRecommendedV8Flags"
+phase = "pre_init"
+
+[[lifecycle]]
+name = "FPDF_GetArrayBufferAllocatorSharedInstance"
+phase = "pre_init_or_destroyed"
+
+[[lifecycle]]
+name = "FPDF_InitLibraryWithConfig"
+phase = "coordinator_owned"
+
+[[lifecycle]]
+name = "FPDF_InitLibrary"
+phase = "coordinator_owned"
+
+[[lifecycle]]
+name = "FPDF_DestroyLibrary"
+phase = "coordinator_owned"

@@ -1,0 +1,36 @@
+[[config]]
+name = "windows-x64-default"
+target = "x86_64-w64-windows-gnu"
+defines = []
+profile = "bblanchon Windows x64 non-V8 release"
+
+[[config]]
+name = "windows-x64-v8-xfa"
+target = "x86_64-w64-windows-gnu"
+defines = ["PDF_ENABLE_V8", "PDF_ENABLE_XFA"]
+profile = "bblanchon Windows x64 V8 release; the builder enables V8 and XFA together"
+
+[[config]]
+name = "linux-x64-default"
+target = "x86_64-unknown-linux-gnu"
+defines = []
+profile = "bblanchon Linux x64 non-V8 release"
+
+[[config]]
+name = "linux-x64-v8-xfa"
+target = "x86_64-unknown-linux-gnu"
+defines = ["PDF_ENABLE_V8", "PDF_ENABLE_XFA"]
+profile = "bblanchon Linux x64 V8 release; the builder enables V8 and XFA together"
+
+[[config]]
+name = "linux-arm64-default"
+target = "aarch64-unknown-linux-gnu"
+defines = []
+profile = "bblanchon Linux ARM64 non-V8 release"
+
+[[config]]
+name = "linux-arm64-v8-xfa"
+target = "aarch64-unknown-linux-gnu"
+defines = ["PDF_ENABLE_V8", "PDF_ENABLE_XFA"]
+profile = "bblanchon Linux ARM64 V8 release; the builder enables V8 and XFA together"
+

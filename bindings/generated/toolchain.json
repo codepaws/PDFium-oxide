@@ -1,0 +1,54 @@
+{
+  "pdfium_version": "157.0.8100.0",
+  "chromium_branch": "chromium/8100",
+  "pdfium_source_commit": "f51279699cb59754d1f49aef10eb8e825fe56532",
+  "bindgen": "bindgen 0.72.1",
+  "clang": "clang version 21.1.8",
+  "configurations": [
+    {
+      "name": "windows-x64-default",
+      "target": "x86_64-w64-windows-gnu",
+      "defines": [],
+      "symbol_count": 471
+    },
+    {
+      "name": "windows-x64-v8-xfa",
+      "target": "x86_64-w64-windows-gnu",
+      "defines": [
+        "PDF_ENABLE_V8",
+        "PDF_ENABLE_XFA"
+      ],
+      "symbol_count": 476
+    },
+    {
+      "name": "linux-x64-default",
+      "target": "x86_64-unknown-linux-gnu",
+      "defines": [],
+      "symbol_count": 469
+    },
+    {
+      "name": "linux-x64-v8-xfa",
+      "target": "x86_64-unknown-linux-gnu",
+      "defines": [
+        "PDF_ENABLE_V8",
+        "PDF_ENABLE_XFA"
+      ],
+      "symbol_count": 474
+    },
+    {
+      "name": "linux-arm64-default",
+      "target": "aarch64-unknown-linux-gnu",
+      "defines": [],
+      "symbol_count": 469
+    },
+    {
+      "name": "linux-arm64-v8-xfa",
+      "target": "aarch64-unknown-linux-gnu",
+      "defines": [
+        "PDF_ENABLE_V8",
+        "PDF_ENABLE_XFA"
+      ],
+      "symbol_count": 474
+    }
+  ]
+}

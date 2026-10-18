@@ -1,0 +1,205 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    name: Host and native coverage
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Rust toolchain and LLVM tools
+        run: rustup toolchain install 1.99.1 --profile minimal --component llvm-tools-preview
+      - name: Fetch locked dependencies
+        run: cargo +1.99.1 fetch --locked
+      - name: Install cargo-llvm-cov
+        run: cargo +1.99.1 install cargo-llvm-cov --version 0.9.1 --locked
+      - name: Generate all-features host coverage
+        run: |
+          cargo +1.99.1 llvm-cov --offline --locked --all-features --all-targets \
+            --ignore-filename-regex 'bindings[/\\]generated' \
+            --html --output-dir target/coverage/host
+          cargo +1.99.1 llvm-cov report \
+            --ignore-filename-regex 'bindings[/\\]generated' \
+            --lcov --output-path target/coverage/host/lcov.info
+          cargo +1.99.1 llvm-cov report \
+            --ignore-filename-regex 'bindings[/\\]generated' \
+            --json --summary-only --output-path target/coverage/host/summary.json
+      - name: Download and smoke test native PDFium
+        run: bash ./scripts/test-runtime-smoke.sh --profile default
+      - name: Generate default-profile native coverage
+        env:
+          PDFIUM_PATH: ${{ github.workspace }}/target/pdfium-smoke/linux-x64-default/lib/libpdfium.so
+        run: |
+          cargo +1.99.1 llvm-cov --offline --locked --all-targets \
+            --ignore-filename-regex 'bindings[/\\]generated' \
+            --html --output-dir target/coverage/native-default -- --include-ignored
+          cargo +1.99.1 llvm-cov report \
+            --ignore-filename-regex 'bindings[/\\]generated' \
+            --lcov --output-path target/coverage/native-default/lcov.info
+          cargo +1.99.1 llvm-cov report \
+            --ignore-filename-regex 'bindings[/\\]generated' \
+            --json --summary-only --output-path target/coverage/native-default/summary.json
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdfium-oxide-coverage
+          path: target/coverage/
+          if-no-files-found: error
+
+  quality:
+    name: Format and tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Rust toolchain
+        run: rustup toolchain install 1.99.1 --profile minimal --component rustfmt
+      - name: Fetch locked dependencies
+        run: cargo +1.99.1 fetch --locked
+      - name: Check formatting
+        run: cargo +1.99.1 fmt --all -- --check
+      - name: Run offline tests
+        run: cargo +1.99.1 test --offline --locked --all-features
+
+  compile-targets:
+    name: Compile ${{ matrix.configuration }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - configuration: windows-x64-default
+            target: x86_64-pc-windows-gnu
+            features: ''
+          - configuration: windows-x64-v8-xfa
+            target: x86_64-pc-windows-gnu
+            features: --features pdfium-v8
+          - configuration: linux-x64-default
+            target: x86_64-unknown-linux-gnu
+            features: ''
+          - configuration: linux-x64-v8-xfa
+            target: x86_64-unknown-linux-gnu
+            features: --features pdfium-v8
+          - configuration: linux-arm64-default
+            target: aarch64-unknown-linux-gnu
+            features: ''
+          - configuration: linux-arm64-v8-xfa
+            target: aarch64-unknown-linux-gnu
+            features: --features pdfium-v8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Rust toolchain and target
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal
+          rustup target add --toolchain 1.99.1 ${{ matrix.target }}
+      - name: Fetch locked dependencies
+        run: cargo +1.99.1 fetch --locked
+      - name: Check target/profile compilation
+        run: cargo +1.99.1 check --offline --locked --target ${{ matrix.target }} ${{ matrix.features }}
+
+  binding-verification:
+    name: Binding audit and reproducibility
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Rust and PowerShell
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal
+          wget -q https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb -O /tmp/packages-microsoft-prod.deb
+          sudo dpkg -i /tmp/packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo apt-get install -y powershell
+      - name: Install pinned Clang 21.1.8
+        run: |
+          curl --fail --location --retry 3 \
+            https://github.com/llvm/llvm-project/releases/download/llvmorg-21.1.8/LLVM-21.1.8-Linux-X64.tar.xz \
+            --output /tmp/clang-llvm.tar.xz
+          mkdir -p "$RUNNER_TEMP/llvm-21.1.8"
+          tar -xJf /tmp/clang-llvm.tar.xz --strip-components=1 -C "$RUNNER_TEMP/llvm-21.1.8"
+          echo "$RUNNER_TEMP/llvm-21.1.8/bin" >> "$GITHUB_PATH"
+          echo "LIBCLANG_PATH=$RUNNER_TEMP/llvm-21.1.8/lib" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/llvm-21.1.8/bin/clang" --version
+      - name: Install pinned bindgen-cli 0.72.1
+        run: cargo +1.99.1 install bindgen-cli --version 0.72.1 --locked
+      - name: Fetch pinned PDFium public headers
+        shell: bash
+        run: |
+          source_dir="$GITHUB_WORKSPACE/target/pdfium-source-pinned"
+          mkdir -p "$source_dir"
+          git -C "$source_dir" init
+          git -C "$source_dir" remote add origin https://pdfium.googlesource.com/pdfium/
+          git -C "$source_dir" sparse-checkout init --cone
+          git -C "$source_dir" sparse-checkout set public
+          git -C "$source_dir" fetch --depth=1 --filter=blob:none origin f51279699cb59754d1f49aef10eb8e825fe56532
+          git -C "$source_dir" checkout --detach FETCH_HEAD
+          test "$(git -C "$source_dir" rev-parse HEAD)" = f51279699cb59754d1f49aef10eb8e825fe56532
+      - name: Check generated runtime bindings
+        shell: pwsh
+        run: ./scripts/tests/check-runtime-binding-output.ps1
+      - name: Audit generated symbols against pinned PDFium headers
+        shell: pwsh
+        run: ./scripts/tests/check-generated-symbol-count.ps1
+      - name: Validate binding generator rejection paths
+        shell: pwsh
+        run: ./scripts/tests/check-binding-generator.ps1 -PdfiumSource "$env:GITHUB_WORKSPACE/target/pdfium-source-pinned" -BindgenPath (Get-Command bindgen).Source
+      - name: Regenerate and require no checked-in changes
+        shell: pwsh
+        run: |
+          ./scripts/regenerate-bindings.ps1 -PdfiumSource "$env:GITHUB_WORKSPACE/target/pdfium-source-pinned" -BindgenPath (Get-Command bindgen).Source -ClangPath (Get-Command clang).Source
+          if ($LASTEXITCODE -ne 0) { throw 'Binding regeneration failed.' }
+          git diff --exit-code -- bindings/generated
+
+  native-smoke:
+    name: Native smoke (${{ matrix.platform }}, ${{ matrix.profile }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Windows x64
+            runner: windows-2025
+            shell: pwsh
+            profile: default
+            command: ./scripts/test-runtime-smoke.ps1 -Profile default
+          - platform: Windows x64
+            runner: windows-2025
+            shell: pwsh
+            profile: v8
+            command: ./scripts/test-runtime-smoke.ps1 -Profile v8
+          - platform: Linux x64
+            runner: ubuntu-24.04
+            shell: bash
+            profile: default
+            command: bash ./scripts/test-runtime-smoke.sh --profile default
+          - platform: Linux x64
+            runner: ubuntu-24.04
+            shell: bash
+            profile: v8
+            command: bash ./scripts/test-runtime-smoke.sh --profile v8
+          - platform: Linux ARM64
+            runner: ubuntu-24.04-arm
+            shell: bash
+            profile: default
+            command: bash ./scripts/test-runtime-smoke.sh --profile default
+          - platform: Linux ARM64
+            runner: ubuntu-24.04-arm
+            shell: bash
+            profile: v8
+            command: bash ./scripts/test-runtime-smoke.sh --profile v8
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Rust toolchain
+        run: rustup toolchain install 1.99.1 --profile minimal
+      - name: Fetch locked dependencies
+        run: cargo +1.99.1 fetch --locked
+      - name: Run pinned PDFium native smoke
+        run: ${{ matrix.command }}

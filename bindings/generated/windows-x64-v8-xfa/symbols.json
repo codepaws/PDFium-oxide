@@ -1,0 +1,2858 @@
+[
+  {
+    "name": "FPDF_InitLibraryWithConfig",
+    "requirement": "required",
+    "capability": null,
+    "phase": "coordinator_owned"
+  },
+  {
+    "name": "FPDF_InitLibrary",
+    "requirement": "required",
+    "capability": null,
+    "phase": "coordinator_owned"
+  },
+  {
+    "name": "FPDF_DestroyLibrary",
+    "requirement": "required",
+    "capability": null,
+    "phase": "coordinator_owned"
+  },
+  {
+    "name": "FPDF_SetSandBoxPolicy",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_SetPrintMode",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_LoadDocument",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_LoadMemDocument",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_LoadMemDocument64",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_LoadCustomDocument",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetFileVersion",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetLastError",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_DocumentHasValidCrossReferenceTable",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetTrailerEnds",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetDocPermissions",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetDocUserPermissions",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetSecurityHandlerRevision",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetPageCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_LoadPage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetPageWidthF",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetPageWidth",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetPageHeightF",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetPageHeight",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetPageBoundingBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetPageSizeByIndexF",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetPageSizeByIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_RenderPage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_RenderPageBitmap",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_RenderPageBitmapWithMatrix",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_ClosePage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_CloseDocument",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_DeviceToPage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_PageToDevice",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBitmap_Create",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBitmap_CreateEx",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBitmap_GetFormat",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBitmap_FillRect",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBitmap_GetBuffer",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBitmap_GetWidth",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBitmap_GetHeight",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBitmap_GetStride",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBitmap_Destroy",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_VIEWERREF_GetPrintScaling",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_VIEWERREF_GetNumCopies",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_VIEWERREF_GetPrintPageRange",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_VIEWERREF_GetPrintPageRangeCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_VIEWERREF_GetPrintPageRangeElement",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_VIEWERREF_GetDuplex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_VIEWERREF_GetName",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_CountNamedDests",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetNamedDestByName",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetNamedDest",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetXFAPacketCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetXFAPacketName",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetXFAPacketContent",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetRecommendedV8Flags",
+    "requirement": "optional",
+    "capability": "V8Xfa",
+    "phase": "pre_init"
+  },
+  {
+    "name": "FPDF_GetArrayBufferAllocatorSharedInstance",
+    "requirement": "optional",
+    "capability": "V8Xfa",
+    "phase": "pre_init_or_destroyed"
+  },
+  {
+    "name": "FPDF_BStr_Init",
+    "requirement": "optional",
+    "capability": "V8Xfa",
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_BStr_Set",
+    "requirement": "optional",
+    "capability": "V8Xfa",
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_BStr_Clear",
+    "requirement": "optional",
+    "capability": "V8Xfa",
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDOC_InitFormFillEnvironment",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDOC_ExitFormFillEnvironment",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnAfterLoadPage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnBeforeClosePage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_DoDocumentJSAction",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_DoDocumentOpenAction",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_DoDocumentAAction",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_DoPageAAction",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnMouseMove",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnMouseWheel",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnFocus",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnLButtonDown",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnRButtonDown",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnLButtonUp",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnRButtonUp",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnLButtonDoubleClick",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnKeyDown",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnKeyUp",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_OnChar",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_GetFocusedText",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_GetSelectedText",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_ReplaceAndKeepSelection",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_ReplaceSelection",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_SelectAllText",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_CanUndo",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_CanRedo",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_Undo",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_Redo",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_ForceToKillFocus",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_GetFocusedAnnot",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_SetFocusedAnnot",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_HasFormFieldAtPoint",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_FormFieldZOrderAtPoint",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_SetFormFieldHighlightColor",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_SetFormFieldHighlightAlpha",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_RemoveFormFieldHighlight",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_FFLDraw",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetFormType",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_SetIndexSelected",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_IsIndexSelected",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_GetTextDirection",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FORM_SetTextDirection",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_LoadXFA",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_IsSupportedSubtype",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_CreateAnnot",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetAnnotCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetAnnot",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetAnnotIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_CloseAnnot",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_RemoveAnnot",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetSubtype",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_IsObjectSupportedSubtype",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_UpdateObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_AddInkStroke",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_RemoveInkList",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_AppendObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetObjectCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_RemoveObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_SetColor",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetColor",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_HasAttachmentPoints",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_SetAttachmentPoints",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_AppendAttachmentPoints",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_CountAttachmentPoints",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetAttachmentPoints",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_SetRect",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetRect",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetVertices",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetInkListCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetInkListPath",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetLine",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_SetBorder",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetBorder",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFormAdditionalActionJavaScript",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_HasKey",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetValueType",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_SetStringValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetStringValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetNumberValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_SetAP",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetAP",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetLinkedAnnot",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFlags",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_SetFlags",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFormFieldFlags",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_SetFormFieldFlags",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFormFieldAtPoint",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFormFieldName",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFormFieldAlternateName",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFormFieldType",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFormFieldValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetOptionCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetOptionLabel",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_IsOptionSelected",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFontSize",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_SetFontColor",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFontColor",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_IsChecked",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_SetFocusableSubtypes",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFocusableSubtypesCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFocusableSubtypes",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetLink",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFormControlCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFormControlIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFormFieldExportValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_SetURI",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_GetFileAttachment",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAnnot_AddFileAttachment",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDoc_GetAttachmentCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDoc_AddAttachment",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDoc_GetAttachment",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDoc_DeleteAttachment",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAttachment_GetName",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAttachment_HasKey",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAttachment_GetValueType",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAttachment_SetStringValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAttachment_GetStringValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAttachment_SetDescription",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAttachment_GetDescription",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAttachment_SetFile",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAttachment_GetFile",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAttachment_GetSubtype",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAttachment_GetAFRelationship",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFCatalog_IsTagged",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFCatalog_GetLanguage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFCatalog_SetLanguage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAvail_Create",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAvail_Destroy",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAvail_IsDocAvail",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAvail_GetDocument",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAvail_GetFirstPageNum",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAvail_IsPageAvail",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAvail_IsFormAvail",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAvail_IsLinearized",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBookmark_GetFirstChild",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBookmark_GetNextSibling",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBookmark_GetTitle",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBookmark_GetCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBookmark_Find",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBookmark_GetDest",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBookmark_GetAction",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBookmark_GetColor",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFBookmark_GetStyle",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAction_GetType",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAction_GetDest",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAction_GetFilePath",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFAction_GetURIPath",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDest_GetDestPageIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDest_GetView",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDest_GetLocationInPage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_GetLinkAtPoint",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_GetLinkZOrderAtPoint",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_GetDest",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_GetAction",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_Enumerate",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_GetAnnot",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_GetAnnotRect",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_CountQuadPoints",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_GetQuadPoints",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetPageAAction",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetFileIdentifier",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetMetaText",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetPageLabel",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_CreateNewDocument",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_New",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_Delete",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_MovePages",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetRotation",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_SetRotation",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_InsertObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_InsertObjectAtIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_RemoveObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_CountObjects",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_HasTransparency",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GenerateContent",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_Destroy",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_HasTransparency",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetType",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetIsActive",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_SetIsActive",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_Transform",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_TransformF",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetMatrix",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_SetMatrix",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_TransformAnnots",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_NewImageObj",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetMarkedContentID",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_CountMarks",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetMark",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_AddMark",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_AddExistingMark",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_RemoveMark",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_GetName",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_CountParams",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_GetParamKey",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_GetParamValueType",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_GetParamIntValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_GetParamFloatValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_GetParamStringValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_GetParamBlobValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_SetIntParam",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_SetFloatParam",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_SetStringParam",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_SetBlobParam",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObjMark_RemoveParam",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_LoadJpegFile",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_LoadJpegFileInline",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_SetMatrix",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_SetBitmap",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_GetBitmap",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_GetRenderedBitmap",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_GetImageDataDecoded",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_GetImageDataRaw",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_GetImageFilterCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_GetImageFilter",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_GetImageMetadata",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_GetImagePixelSize",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFImageObj_GetIccProfileDataDecoded",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_CreateNewPath",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_CreateNewRect",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetBounds",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetRotatedBounds",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_SetBlendMode",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_SetStrokeColor",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetStrokeColor",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_SetStrokeWidth",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetStrokeWidth",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetLineJoin",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_SetLineJoin",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetLineCap",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_SetLineCap",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_SetFillColor",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetFillColor",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetDashPhase",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_SetDashPhase",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetDashCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetDashArray",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_SetDashArray",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetRenderedStrokePattern",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetRenderedFillPattern",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPath_CountSegments",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPath_GetPathSegment",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPathSegment_GetPoint",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPathSegment_GetType",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPathSegment_GetClose",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPath_MoveTo",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPath_LineTo",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPath_BezierTo",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPath_GetBezierControlPoints",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPath_Close",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPath_SetDrawMode",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPath_GetDrawMode",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_NewTextObj",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_SetText",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_SetCharcodes",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_SetPositions",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_LoadFont",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_LoadStandardFont",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_LoadCidType2Font",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFTextObj_GetFontSize",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFTextObj_SetFontSize",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFont_Close",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_CreateTextObj",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFTextObj_GetTextRenderMode",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFTextObj_SetTextRenderMode",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFTextObj_GetText",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFTextObj_GetRenderedBitmap",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFTextObj_GetFont",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFont_GetBaseFontName",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFont_GetFamilyName",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFont_GetFontData",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFont_GetIsEmbedded",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFont_GetFlags",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFont_GetWeight",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFont_GetItalicAngle",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFont_GetAscent",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFont_GetDescent",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFont_GetGlyphWidth",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFont_GetGlyphPath",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFGlyphPath_CountGlyphSegments",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFGlyphPath_GetGlyphPathSegment",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFormObj_CountObjects",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFormObj_GetObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFFormObj_RemoveObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FSDK_SetUnSpObjProcessHandler",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FSDK_SetTimeFunction",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FSDK_SetLocaltimeFunction",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDoc_GetPageMode",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_Flatten",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDoc_GetJavaScriptActionCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDoc_GetJavaScriptAction",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFDoc_CloseJavaScriptAction",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFJavaScriptAction_GetName",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFJavaScriptAction_GetScript",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_ImportPagesByIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_ImportPages",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_ImportNPagesToOne",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_NewXObjectFromPage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_CloseXObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_NewFormObjectFromXObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_CopyViewerPreferences",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_RenderPageBitmapWithColorScheme_Start",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_RenderPageBitmap_Start",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_RenderPage_Continue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_RenderPage_Close",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_SaveAsCopy",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_SaveWithVersion",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetCharIndexFromTextIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetTextIndexFromCharIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetSignatureCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetSignatureObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFSignatureObj_GetContents",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFSignatureObj_GetByteRange",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFSignatureObj_GetSubFilter",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFSignatureObj_GetReason",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFSignatureObj_GetTime",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFSignatureObj_GetDocMDPPermission",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructTree_GetForPage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructTree_Close",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructTree_CountChildren",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructTree_GetChildAtIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetAltText",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetActualText",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetExpansion",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetID",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetLang",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetStringAttribute",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetMarkedContentID",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetRawType",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetType",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetObjType",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetTitle",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_CountChildren",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetChildAtIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetChildMarkedContentID",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetParent",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetAttributeCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetAttributeAtIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_Attr_GetCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_Attr_GetName",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_Attr_GetValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_Attr_GetType",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_Attr_GetBooleanValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_Attr_GetNumberValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_Attr_GetStringValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_Attr_GetBlobValue",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_Attr_CountChildren",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_Attr_GetChildAtIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetMarkedContentIdCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_StructElement_GetMarkedContentIdAtIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetDefaultTTFMap",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetDefaultTTFMapCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetDefaultTTFMapEntry",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_AddInstalledFont",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_SetSystemFontInfo",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_GetDefaultSystemFontInfo",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_FreeDefaultSystemFontInfo",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_LoadPage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_ClosePage",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_CountChars",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetUnicode",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetTextObject",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_IsGenerated",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_IsHyphen",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_HasUnicodeMapError",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetFontSize",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetFontInfo",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetFontWeight",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetFillColor",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetStrokeColor",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetCharAngle",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetCharBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetLooseCharBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetMatrix",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetCharOrigin",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetCharIndexAtPos",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetText",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_CountRects",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetRect",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetBoundedText",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_FindStart",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_FindNext",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_FindPrev",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetSchResultIndex",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_GetSchCount",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFText_FindClose",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_LoadWebLinks",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_CountWebLinks",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_GetURL",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_CountRects",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_GetRect",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_GetTextRange",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFLink_CloseWebLinks",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetDecodedThumbnailData",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetRawThumbnailData",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetThumbnailAsBitmap",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_SetMediaBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_SetCropBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_SetBleedBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_SetTrimBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_SetArtBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetMediaBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetCropBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetBleedBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetTrimBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_GetArtBox",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_TransFormWithClip",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_TransformClipPath",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPageObj_GetClipPath",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFClipPath_CountPaths",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFClipPath_CountPathSegments",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFClipPath_GetPathSegment",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_CreateClipPath",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDF_DestroyClipPath",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  },
+  {
+    "name": "FPDFPage_InsertClipPath",
+    "requirement": "required",
+    "capability": null,
+    "phase": "initialized"
+  }
+]

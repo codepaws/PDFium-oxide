@@ -1,0 +1,40 @@
+{
+  "pdfium_version": "157.0.8100.0",
+  "chromium_branch": "chromium/8100",
+  "pdfium_source_commit": "f51279699cb59754d1f49aef10eb8e825fe56532",
+  "source_url": "https://pdfium.googlesource.com/pdfium/",
+  "configuration": "windows-x64-v8-xfa",
+  "target": "x86_64-w64-windows-gnu",
+  "defines": [
+    "PDF_ENABLE_V8",
+    "PDF_ENABLE_XFA"
+  ],
+  "profile": "bblanchon Windows x64 V8 release; the builder enables V8 and XFA together",
+  "bindgen": "bindgen 0.72.1",
+  "clang": "clang version 21.1.8",
+  "public_headers": [
+    "public/fpdf_annot.h",
+    "public/fpdf_attachment.h",
+    "public/fpdf_catalog.h",
+    "public/fpdf_dataavail.h",
+    "public/fpdf_doc.h",
+    "public/fpdf_edit.h",
+    "public/fpdf_ext.h",
+    "public/fpdf_flatten.h",
+    "public/fpdf_formfill.h",
+    "public/fpdf_fwlevent.h",
+    "public/fpdf_javascript.h",
+    "public/fpdf_ppo.h",
+    "public/fpdf_progressive.h",
+    "public/fpdf_save.h",
+    "public/fpdf_searchex.h",
+    "public/fpdf_signature.h",
+    "public/fpdf_structtree.h",
+    "public/fpdf_sysfontinfo.h",
+    "public/fpdf_text.h",
+    "public/fpdf_thumbnail.h",
+    "public/fpdf_transformpage.h",
+    "public/fpdfview.h"
+  ],
+  "generated_api_symbol_count": 476
+}

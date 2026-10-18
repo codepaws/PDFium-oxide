@@ -1,0 +1,35 @@
+[package]
+name = "pdfium-oxide"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.99"
+description = "A permissively licensed Rust interface to the PDFium C library"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+
+[lib]
+name = "pdfium_oxide"
+path = "src/lib.rs"
+
+[features]
+default = []
+pdfium-v8 = []
+
+[dependencies]
+libloading = "0.8"
+
+[package.metadata.pdfium]
+version = "157.0.8100.0"
+chromium-branch = "chromium/8100"
+release-url = "https://github.com/bblanchon/pdfium-binaries/releases/tag/chromium%2F8100"
+source-url = "https://pdfium.googlesource.com/pdfium/"
+source-commit = "f51279699cb59754d1f49aef10eb8e825fe56532"
+binding-configurations = [
+    "windows-x64-default",
+    "windows-x64-v8-xfa",
+    "linux-x64-default",
+    "linux-x64-v8-xfa",
+    "linux-arm64-default",
+    "linux-arm64-v8-xfa",
+]
+
