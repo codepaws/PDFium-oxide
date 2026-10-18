@@ -221,9 +221,18 @@ fn audit_configurations(
             )
             .into());
         }
+        let coordinator_owned = manifest
+            .iter()
+            .filter(|entry| entry.phase == "coordinator_owned")
+            .count();
         println!(
-            "  {configuration}: {} public API symbols",
-            source_symbols.len()
+            "{}",
+            format_configuration_counts(
+                &configuration,
+                source_symbols.len(),
+                wrapper_symbols.len(),
+                coordinator_owned,
+            )
         );
     }
     Ok(())
@@ -296,4 +305,26 @@ fn output(command: &mut Command) -> Result<String, Box<dyn Error>> {
         .into());
     }
     Ok(String::from_utf8(output.stdout)?.trim_end().to_owned())
+}
+
+fn format_configuration_counts(
+    configuration: &str,
+    headers: usize,
+    wrappers: usize,
+    lifecycle: usize,
+) -> String {
+    format!("  {configuration}: {headers} header declarations, {wrappers} public raw wrappers, {lifecycle} coordinator-owned lifecycle functions")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::format_configuration_counts;
+
+    #[test]
+    fn reports_each_distinct_audit_count() {
+        assert_eq!(
+            format_configuration_counts("windows-x64-default", 500, 497, 3),
+            "  windows-x64-default: 500 header declarations, 497 public raw wrappers, 3 coordinator-owned lifecycle functions"
+        );
+    }
 }
