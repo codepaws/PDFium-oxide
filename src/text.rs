@@ -102,10 +102,11 @@ impl TextPage {
             if let Some(error) = source_error {
                 return Err(error);
             }
-            let char_count = checked_native_count(char_count_call.return_value)?;
-            if char_count == 0 {
-                return Ok(Vec::new());
-            }
+            let char_count = match segment_counts(char_count_call.return_value, None)? {
+                SegmentCounts::Empty => return Ok(Vec::new()),
+                SegmentCounts::NeedRectCount(chars) => chars,
+                SegmentCounts::Ready { .. } => unreachable!("rect count not queried yet"),
+            };
             let char_count_arg = checked_native_count_argument(char_count)?;
             let (rect_count_call, source_error) = calls
                 .call("FPDFText_CountRects", |ctx| unsafe {
@@ -114,24 +115,23 @@ impl TextPage {
             if let Some(error) = source_error {
                 return Err(error);
             }
-            let (_, rect_count) =
-                checked_segment_counts(char_count_call.return_value, rect_count_call.return_value)?;
-            let rect_count = rect_count.unwrap_or(0);
+            let (char_count, rect_count) = match segment_counts(
+                char_count_call.return_value,
+                Some(rect_count_call.return_value),
+            )? {
+                SegmentCounts::Empty => return Ok(Vec::new()),
+                SegmentCounts::Ready { chars, rects } => (chars, rects),
+                SegmentCounts::NeedRectCount(_) => unreachable!("rect count was provided"),
+            };
             let rect_count_arg = checked_native_count_argument(rect_count)?;
             let mut segments = Vec::new();
-            let requested_bytes = rect_count
-                .checked_mul(std::mem::size_of::<TextSegment>())
-                .ok_or(PdfiumError::Allocation {
-                    requested_bytes: usize::MAX,
-                })?;
+            let requested_bytes =
+                checked_allocation_bytes(rect_count, std::mem::size_of::<TextSegment>())?;
             segments
                 .try_reserve_exact(rect_count)
                 .map_err(|_| PdfiumError::Allocation { requested_bytes })?;
-            let requested_chars = char_count
-                .checked_mul(std::mem::size_of::<CharacterRecord>())
-                .ok_or(PdfiumError::Allocation {
-                    requested_bytes: usize::MAX,
-                })?;
+            let requested_chars =
+                checked_allocation_bytes(char_count, std::mem::size_of::<CharacterRecord>())?;
             let mut characters = Vec::new();
             characters
                 .try_reserve_exact(char_count)
@@ -155,12 +155,7 @@ impl TextPage {
                     return Err(error);
                 }
                 let (ok, left, bottom, right, top) = rect_call.return_value;
-                if ok == 0 {
-                    return Err(PdfiumError::Operation {
-                        function: "FPDFText_GetRect".into(),
-                        last_error: rect_call.last_error,
-                    });
-                }
+                rectangle_result(ok, rect_call.last_error)?;
                 characters.clear();
                 for index in 0..char_count_arg {
                     let (box_call, source_error) =
@@ -196,9 +191,7 @@ impl TextPage {
                     characters.push((Some((l, b, r, t)), scalar));
                 }
                 let mut text = String::new();
-                let estimate = char_count.checked_mul(4).ok_or(PdfiumError::Allocation {
-                    requested_bytes: usize::MAX,
-                })?;
+                let estimate = checked_allocation_bytes(char_count, 4)?;
                 text.try_reserve(estimate)
                     .map_err(|_| PdfiumError::Allocation {
                         requested_bytes: estimate,
@@ -217,17 +210,46 @@ impl TextPage {
     }
 }
 
-fn checked_segment_counts(
-    char_count: i32,
-    rect_count: i32,
-) -> Result<(Option<usize>, Option<usize>), PdfiumError> {
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum SegmentCounts {
+    Empty,
+    NeedRectCount(usize),
+    Ready { chars: usize, rects: usize },
+}
+
+fn segment_counts(char_count: i32, rect_count: Option<i32>) -> Result<SegmentCounts, PdfiumError> {
     let chars = checked_native_count(char_count)?;
+    if chars == 0 {
+        return Ok(SegmentCounts::Empty);
+    }
+    let Some(rect_count) = rect_count else {
+        return Ok(SegmentCounts::NeedRectCount(chars));
+    };
     let rects = checked_native_count(rect_count)?;
-    Ok(if chars == 0 || rects == 0 {
-        (None, None)
+    Ok(if rects == 0 {
+        SegmentCounts::Empty
     } else {
-        (Some(chars), Some(rects))
+        SegmentCounts::Ready { chars, rects }
     })
+}
+
+fn rectangle_result(ok: i32, last_error: u64) -> Result<(), PdfiumError> {
+    if ok != 0 {
+        Ok(())
+    } else {
+        Err(PdfiumError::Operation {
+            function: "FPDFText_GetRect".into(),
+            last_error,
+        })
+    }
+}
+
+fn checked_allocation_bytes(count: usize, element_size: usize) -> Result<usize, PdfiumError> {
+    count
+        .checked_mul(element_size)
+        .ok_or(PdfiumError::Allocation {
+            requested_bytes: usize::MAX,
+        })
 }
 
 fn decode_text(
@@ -336,8 +358,8 @@ fn append_segment_text(text: &mut String, rect: Bounds, characters: &[CharacterR
 #[cfg(test)]
 mod tests {
     use super::{
-        checked_native_count, checked_native_count_argument, checked_segment_counts, decode_text,
-        segment_contains_box, segment_text,
+        checked_allocation_bytes, checked_native_count, checked_native_count_argument, decode_text,
+        rectangle_result, segment_contains_box, segment_counts, segment_text, SegmentCounts,
     };
     use crate::PdfiumError;
 
@@ -378,15 +400,34 @@ mod tests {
 
     #[test]
     fn segments_returns_empty_for_empty_text_counts() {
-        assert_eq!(checked_segment_counts(0, 0).unwrap(), (None, None));
-        assert_eq!(checked_segment_counts(1, 0).unwrap(), (None, None));
+        assert_eq!(segment_counts(0, None).unwrap(), SegmentCounts::Empty);
+        assert_eq!(segment_counts(1, Some(0)).unwrap(), SegmentCounts::Empty);
     }
 
     #[test]
     fn segments_rejects_negative_rectangle_count() {
         assert!(matches!(
-            checked_segment_counts(1, -1),
+            segment_counts(1, Some(-1)),
             Err(PdfiumError::InvalidInput { .. })
+        ));
+    }
+
+    #[test]
+    fn segments_failed_rectangle_retrieval_is_an_operation_error() {
+        assert!(matches!(
+            rectangle_result(0, 73),
+            Err(PdfiumError::Operation { ref function, last_error: 73 }) if function == "FPDFText_GetRect"
+        ));
+    }
+
+    #[test]
+    fn segments_allocation_size_checks_overflow() {
+        assert_eq!(checked_allocation_bytes(4, 8).unwrap(), 32);
+        assert!(matches!(
+            checked_allocation_bytes(usize::MAX, 2),
+            Err(PdfiumError::Allocation {
+                requested_bytes: usize::MAX
+            })
         ));
     }
     #[test]
