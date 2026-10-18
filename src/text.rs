@@ -7,6 +7,16 @@ use crate::{
 };
 use std::{any::Any, sync::Arc};
 
+/// Owned text and page-space bounds for one PDFium text rectangle.
+#[derive(Clone, Debug, PartialEq)]
+pub struct TextSegment {
+    pub text: String,
+    pub left: f64,
+    pub bottom: f64,
+    pub right: f64,
+    pub top: f64,
+}
+
 struct TextPageInner {
     resource: ManagedResource<FPDF_TEXTPAGE>,
     source: Option<Arc<dyn crate::callback::SourceFailureCheck>>,
@@ -45,10 +55,7 @@ impl TextPage {
             return Err(error);
         }
         let count = count.return_value;
-        let count = usize::try_from(count).map_err(|_| PdfiumError::InvalidInput {
-            operation: "FPDFText_CountChars".into(),
-            message: "PDFium returned a negative character count".into(),
-        })?;
+        let count = checked_native_count(count)?;
         if count == 0 {
             return Ok(String::new());
         }
@@ -66,8 +73,7 @@ impl TextPage {
             .try_reserve_exact(capacity)
             .map_err(|_| PdfiumError::Allocation { requested_bytes })?;
         units.resize(capacity, 0);
-        let native_count =
-            i32::try_from(count).map_err(|_| PdfiumError::Allocation { requested_bytes })?;
+        let native_count = checked_native_count_argument(count)?;
         let (returned, callback_error) = runtime::call_with_source(
             "FPDFText_GetText",
             Phase::Initialized,
@@ -133,10 +139,99 @@ fn text_decode_error(message: &str) -> PdfiumError {
         message: message.into(),
     }
 }
+
+fn checked_native_count(count: i32) -> Result<usize, PdfiumError> {
+    usize::try_from(count).map_err(|_| PdfiumError::InvalidInput {
+        operation: "PDFium text count".into(),
+        message: "PDFium returned a negative or unrepresentable count".into(),
+    })
+}
+
+fn checked_native_count_argument(count: usize) -> Result<i32, PdfiumError> {
+    i32::try_from(count).map_err(|_| PdfiumError::Allocation {
+        requested_bytes: count,
+    })
+}
+
+#[cfg_attr(not(test), allow(dead_code))]
+type Bounds = (f64, f64, f64, f64);
+#[cfg_attr(not(test), allow(dead_code))]
+type CharacterRecord = (Option<Bounds>, Option<char>);
+
+#[cfg_attr(not(test), allow(dead_code))]
+fn valid_bounds((left, bottom, right, top): Bounds) -> bool {
+    left.is_finite()
+        && bottom.is_finite()
+        && right.is_finite()
+        && top.is_finite()
+        && left <= right
+        && bottom <= top
+}
+
+#[cfg_attr(not(test), allow(dead_code))]
+fn segment_contains_box(rect: Bounds, character: Bounds) -> bool {
+    valid_bounds(rect)
+        && valid_bounds(character)
+        && character.0 >= rect.0
+        && character.1 >= rect.1
+        && character.2 <= rect.2
+        && character.3 <= rect.3
+}
+
+#[cfg_attr(not(test), allow(dead_code))]
+fn segment_text(rect: Bounds, characters: &[CharacterRecord]) -> String {
+    let mut text = String::new();
+    for (bounds, unicode) in characters {
+        if let (Some(bounds), Some(unicode)) = (bounds, unicode) {
+            if segment_contains_box(rect, *bounds) {
+                text.push(*unicode);
+            }
+        }
+    }
+    text
+}
 #[cfg(test)]
 mod tests {
-    use super::decode_text;
+    use super::{
+        checked_native_count, checked_native_count_argument, decode_text, segment_contains_box,
+        segment_text,
+    };
     use crate::PdfiumError;
+
+    #[test]
+    fn segments_includes_fully_contained_boxes_with_inclusive_edges() {
+        let bounds = (0.0, 0.0, 10.0, 10.0);
+        let chars = [
+            (Some((0.0, 0.0, 2.0, 2.0)), Some('A')),
+            (Some((8.0, 8.0, 10.0, 10.0)), Some('B')),
+            (Some((4.0, 4.0, 6.0, 6.0)), Some('C')),
+        ];
+        assert!(segment_contains_box(bounds, (0.0, 0.0, 2.0, 2.0)));
+        assert_eq!(segment_text(bounds, &chars), "ABC");
+    }
+
+    #[test]
+    fn segments_omits_partial_invalid_and_unmapped_characters() {
+        let bounds = (0.0, 0.0, 10.0, 10.0);
+        let chars = [
+            (Some((1.0, 1.0, 2.0, 2.0)), Some('A')),
+            (Some((-1.0, 1.0, 2.0, 2.0)), Some('x')),
+            (Some((f64::NAN, 1.0, 2.0, 2.0)), Some('y')),
+            (Some((2.0, 2.0, 3.0, 3.0)), None),
+            (None, Some('z')),
+            (Some((4.0, 4.0, 3.0, 5.0)), Some('w')),
+            (Some((2.0, 2.0, 3.0, 3.0)), Some('B')),
+        ];
+        assert_eq!(segment_text(bounds, &chars), "AB");
+    }
+
+    #[test]
+    fn segments_checked_count_accepts_zero_and_positive_and_rejects_negative_and_overflow() {
+        assert_eq!(checked_native_count(0).unwrap(), 0);
+        assert_eq!(checked_native_count(7).unwrap(), 7);
+        assert!(checked_native_count(-1).is_err());
+        assert!(checked_native_count_argument(usize::MAX).is_err());
+    }
     #[test]
     fn validates_counts_terminator_truncation_and_utf16() {
         assert_eq!(decode_text(0, &[0], 0).unwrap(), "");
