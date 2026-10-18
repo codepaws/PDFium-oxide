@@ -7,7 +7,15 @@ use crate::{
 };
 use std::{any::Any, sync::Arc};
 
-/// Owned text and page-space bounds for one PDFium text rectangle.
+/// An owned text span and the bounds of its PDFium text rectangle.
+///
+/// The bounds are in PDF page user space, measured in PDF points. Their
+/// orientation and values are preserved from PDFium, and rectangles retain
+/// PDFium's line and text-style grouping and rectangle order. `text` contains
+/// characters in document order whose complete character boxes fall within
+/// these bounds, including boxes that touch an edge. Characters with an
+/// unavailable box or Unicode value are omitted. All fields are owned values
+/// and remain usable independently of the originating [`TextPage`].
 #[derive(Clone, Debug, PartialEq)]
 pub struct TextSegment {
     pub text: String,
@@ -90,7 +98,15 @@ impl TextPage {
         decode_text(count, &units, returned)
     }
 
-    /// Returns owned text and page-space bounds for PDFium's text rectangles.
+    /// Returns owned text and bounds for PDFium's text rectangles.
+    ///
+    /// Bounds use PDF page user space in PDF points, with the coordinate
+    /// orientation and rectangle order returned by PDFium. PDFium's existing
+    /// line and text-style grouping is preserved. A character is included
+    /// only when its complete box is contained in the rectangle; edges match
+    /// inclusively. Characters whose boxes or Unicode values are unavailable
+    /// are omitted. Returned strings and bounds are independent owned values
+    /// and remain valid after this `TextPage` is dropped.
     pub fn segments(&self) -> Result<Vec<TextSegment>, PdfiumError> {
         let handle = self.0.resource.handle();
         let source = self.0.source.as_deref();
@@ -191,8 +207,8 @@ impl TextPage {
                     characters.push((Some((l, b, r, t)), scalar));
                 }
                 let mut text = String::new();
-                let estimate = checked_allocation_bytes(char_count, 4)?;
-                text.try_reserve(estimate)
+                let estimate = segment_text_capacity((left, bottom, right, top), &characters)?;
+                text.try_reserve_exact(estimate)
                     .map_err(|_| PdfiumError::Allocation {
                         requested_bytes: estimate,
                     })?;
@@ -355,11 +371,33 @@ fn append_segment_text(text: &mut String, rect: Bounds, characters: &[CharacterR
         }
     }
 }
+
+fn segment_text_capacity(
+    rect: Bounds,
+    characters: &[CharacterRecord],
+) -> Result<usize, PdfiumError> {
+    characters
+        .iter()
+        .try_fold(0usize, |capacity, (bounds, unicode)| {
+            let (Some(bounds), Some(unicode)) = (bounds, unicode) else {
+                return Ok(capacity);
+            };
+            if !segment_contains_box(rect, *bounds) || *unicode == '\0' {
+                return Ok(capacity);
+            }
+            capacity
+                .checked_add(unicode.len_utf8())
+                .ok_or(PdfiumError::Allocation {
+                    requested_bytes: usize::MAX,
+                })
+        })
+}
 #[cfg(test)]
 mod tests {
     use super::{
         checked_allocation_bytes, checked_native_count, checked_native_count_argument, decode_text,
-        rectangle_result, segment_contains_box, segment_counts, segment_text, SegmentCounts,
+        rectangle_result, segment_contains_box, segment_counts, segment_text,
+        segment_text_capacity, SegmentCounts,
     };
     use crate::PdfiumError;
 
@@ -429,6 +467,19 @@ mod tests {
                 requested_bytes: usize::MAX
             })
         ));
+    }
+
+    #[test]
+    fn segments_capacity_counts_only_accepted_utf8_bytes() {
+        let rect = (0.0, 0.0, 10.0, 10.0);
+        let chars = [
+            (Some((1.0, 1.0, 2.0, 2.0)), Some('A')),
+            (Some((11.0, 1.0, 12.0, 2.0)), Some('x')),
+            (Some((2.0, 2.0, 3.0, 3.0)), None),
+            (Some((3.0, 3.0, 4.0, 4.0)), Some('界')),
+            (None, Some('😃')),
+        ];
+        assert_eq!(segment_text_capacity(rect, &chars).unwrap(), 4);
     }
     #[test]
     fn validates_counts_terminator_truncation_and_utf16() {
