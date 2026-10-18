@@ -173,6 +173,34 @@ fn complete_document_text_and_render_workflow() {
     drop(bytes);
     let page = memory_doc.page(0).unwrap();
     let text = page.text_page().unwrap();
+    let segments = text.segments().unwrap();
+    // These are the rectangles PDFium's CountRects/GetRect reports for the
+    // authored lines and style change, in native rectangle order.
+    assert_eq!(
+        segments
+            .iter()
+            .map(|segment| segment.text.as_str())
+            .collect::<Vec<_>>(),
+        ["PDFium Workflow Fixture", "Normal ", "Bold", "Second line"]
+    );
+    let expected_bounds = [
+        (21.386, 69.802, 223.274, 83.104),
+        (20.912, 47.868, 62.0, 56.592),
+        (62.876, 47.868, 87.896, 56.592),
+        (20.54, 31.868, 82.208, 40.736),
+    ];
+    for (segment, (left, bottom, right, top)) in segments.iter().zip(expected_bounds) {
+        assert!(segment.left <= segment.right && segment.bottom <= segment.top);
+        for (actual, expected) in [segment.left, segment.bottom, segment.right, segment.top]
+            .into_iter()
+            .zip([left, bottom, right, top])
+        {
+            assert!(
+                (actual - expected).abs() < 0.02,
+                "unexpected PDFium rectangle: {segment:?}"
+            );
+        }
+    }
     drop(memory_doc);
     drop(page);
     assert!(text
@@ -180,6 +208,8 @@ fn complete_document_text_and_render_workflow() {
         .unwrap()
         .contains("PDFium Workflow Fixture"));
     drop(text);
+    assert_eq!(segments[2].text, "Bold");
+    assert!((segments[2].right - 87.896).abs() < 0.02);
     assert!(matches!(
         pdfium.open_document(&encrypted, None),
         Err(PdfiumError::Password { .. })
