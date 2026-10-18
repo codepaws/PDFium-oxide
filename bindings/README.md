@@ -20,31 +20,37 @@ On Windows, install Clang with `libclang` available, then install the pinned gen
 cargo install bindgen-cli --version 0.72.1 --locked
 ```
 
-Check out the exact source commit, then regenerate all six configurations:
+Fetch the exact public-header checkout, then regenerate all six configurations:
 
-```powershell
-git clone https://pdfium.googlesource.com/pdfium.git pdfium-source
-git -C pdfium-source fetch --depth 1 origin f51279699cb59754d1f49aef10eb8e825fe56532
-git -C pdfium-source checkout --detach f51279699cb59754d1f49aef10eb8e825fe56532
-pwsh ./scripts/regenerate-bindings.ps1 -PdfiumSource ./pdfium-source
+```sh
+cargo xtask fetch-pdfium-source
+cargo xtask regenerate-bindings
 ```
 
-The script verifies the full source commit, public header inventory, bindgen version, and Clang version before writing generated output. It generates to a temporary directory first, then updates only `bindings/generated/`. The Linux `time.h` compatibility header supplies the LP64 `time_t` alias and opaque `struct tm` required by `fpdf_ext.h` when generating on a Windows host without a Linux sysroot.
+The command verifies the full source commit, public header inventory, bindgen version, and Clang version before writing generated output. It generates to a temporary directory first, then updates only `bindings/generated/`. The Linux `time.h` compatibility header supplies the LP64 `time_t` alias and opaque `struct tm` required by `fpdf_ext.h` when generating on a Windows host without a Linux sysroot.
 
 After regeneration, inspect the generated diff and run:
 
-```powershell
-pwsh ./scripts/tests/check-binding-generator.ps1 -PdfiumSource ./pdfium-source -BindgenPath (Get-Command bindgen).Source
-pwsh ./scripts/tests/check-generated-symbol-count.ps1 -PdfiumSource ./pdfium-source
+```sh
+cargo xtask check-generator --bindgen bindgen --clang clang
+cargo xtask check-bindings
+cargo xtask audit-bindings
 cargo check --offline --all-targets --all-features
 cargo check --offline --target x86_64-unknown-linux-gnu --all-features
 cargo check --offline --target aarch64-unknown-linux-gnu --all-features
 ```
 
-The header audit parses the pinned public headers separately for each target and
-define set, then compares that inventory with the generated dispatch table,
-runtime symbol manifest, and raw wrappers. A mismatch reports the configuration
-and sorted missing/extra names; coordinator-owned lifecycle functions are
-accounted for by the runtime instead of ordinary raw wrappers.
+The header audit is run with `cargo xtask audit-bindings`. It parses the pinned
+public headers separately for each target and define set, then compares that
+inventory with the generated dispatch table, runtime symbol manifest, and raw
+wrappers. A mismatch reports the configuration and sorted missing/extra names;
+coordinator-owned lifecycle functions are accounted for by the runtime instead
+of ordinary raw wrappers. Clang must be available on `PATH`; set `CLANG` to use
+a specific executable. The pinned PDFium checkout defaults to
+`target/pdfium-source-pinned` when `--pdfium-source` is omitted.
+When regenerating Windows bindings on Linux, install MinGW headers and set
+`WINDOWS_INCLUDE` to their include directory (Ubuntu's
+`/usr/x86_64-w64-mingw32/include`); CI uses this setup. On Windows, Clang must
+be installed with a Windows SDK or MinGW headers available.
 
 Run the generator a second time with the same source and toolchain and confirm the generated diff is clean. Review all changed declarations against the official public headers before upgrading the PDFium baseline.
