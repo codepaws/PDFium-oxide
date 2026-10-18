@@ -31,4 +31,4 @@ pub use render::{
     AlphaSemantics, Bitmap, BitmapPixelView, BitmapSnapshot, ChannelOrder, PixelFormat,
 };
 pub use runtime::{Pdfium, PdfiumCall, PdfiumDestroyed, PdfiumInit};
-pub use text::TextPage;
+pub use text::{TextPage, TextSegment};
