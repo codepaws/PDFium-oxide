@@ -112,7 +112,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install pinned Rust toolchain and fetch locked dependencies
         run: |
-          rustup toolchain install 1.99.1 --profile minimal
+          rustup toolchain install 1.99.1 --profile minimal --component rustfmt
           cargo +1.99.1 fetch --locked
       - name: Install pinned Clang 21.1.8
         run: |
