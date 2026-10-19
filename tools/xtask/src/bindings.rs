@@ -736,25 +736,23 @@ fn emit_impl(
 }
 
 fn dispatch_symbols(source: &str) -> Result<Vec<String>, Box<dyn Error>> {
-    let start = source
-        .find("pub(crate) struct pdfium {")
+    let file = syn::parse_file(source)?;
+    let table = file
+        .items
+        .into_iter()
+        .find_map(|item| match item {
+            syn::Item::Struct(item) if item.ident == "pdfium" => Some(item),
+            _ => None,
+        })
         .ok_or("dispatch table missing")?;
-    let opening = source[start..]
-        .find('{')
-        .ok_or("dispatch table opening brace missing")?
-        + start;
-    let body_start = opening + 1;
-    let end = matching(source, opening, '{', '}').map_err(|_| "dispatch table not closed")?;
     let mut symbols = Vec::new();
-    for line in source[body_start..end].lines() {
-        let Some(rest) = line.trim().strip_prefix("pub ") else {
+    for field in table.fields {
+        let Some(name) = field.ident else {
             continue;
         };
-        let Some((name, _)) = rest.split_once(':') else {
-            continue;
-        };
+        let name = name.to_string();
         if name.starts_with("FPDF") || name.starts_with("FORM_") || name.starts_with("FSDK_") {
-            symbols.push(name.to_owned());
+            symbols.push(name);
         }
     }
     if symbols.iter().collect::<BTreeSet<_>>().len() != symbols.len() {
@@ -784,6 +782,13 @@ mod tests {
     #[test]
     fn dispatch_table_parser_accepts_a_same_line_closing_brace() {
         let source = "pub(crate) struct pdfium { pub FPDF_InitLibrary: fn(), }\n";
+
+        assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
+    }
+
+    #[test]
+    fn dispatch_table_parser_ignores_braces_inside_field_documentation() {
+        let source = "pub(crate) struct pdfium {\n    /// A documentation brace: }\n    pub FPDF_InitLibrary: fn(),\n}\n";
 
         assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
     }
