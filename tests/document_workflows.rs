@@ -183,6 +183,7 @@ fn complete_document_text_and_render_workflow() {
             .collect::<Vec<_>>(),
         ["PDFium Workflow Fixture", "Normal ", "Bold", "Second line"]
     );
+    // PDFium's platform builds can differ slightly in their font metrics.
     let expected_bounds = [
         (21.386, 69.802, 223.274, 83.104),
         (20.912, 47.868, 62.0, 56.592),
@@ -196,7 +197,7 @@ fn complete_document_text_and_render_workflow() {
             .zip([left, bottom, right, top])
         {
             assert!(
-                (actual - expected).abs() < 0.02,
+                (actual - expected).abs() < 0.2,
                 "unexpected PDFium rectangle: {segment:?}"
             );
         }
@@ -209,7 +210,7 @@ fn complete_document_text_and_render_workflow() {
         .contains("PDFium Workflow Fixture"));
     drop(text);
     assert_eq!(segments[2].text, "Bold");
-    assert!((segments[2].right - 87.896).abs() < 0.02);
+    assert!((segments[2].right - 87.896).abs() < 0.2);
     assert!(matches!(
         pdfium.open_document(&encrypted, None),
         Err(PdfiumError::Password { .. })

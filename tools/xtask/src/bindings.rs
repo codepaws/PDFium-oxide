@@ -432,7 +432,12 @@ fn regenerate_into(
             1,
         );
         let dispatch = format!("use super::types::*;\n{dispatch_body}");
-        let symbols = dispatch_symbols(&dispatch)?;
+        let symbols = dispatch_symbols(&dispatch).map_err(|error| {
+            format!(
+                "Could not parse dispatch table for '{}': {error}",
+                configuration.name
+            )
+        })?;
         if symbols.len() < 300 {
             return Err(format!(
                 "Only {} public API symbols were generated for '{}'.",
@@ -734,7 +739,11 @@ fn dispatch_symbols(source: &str) -> Result<Vec<String>, Box<dyn Error>> {
     let start = source
         .find("pub(crate) struct pdfium {")
         .ok_or("dispatch table missing")?;
-    let body_start = source[start..].find('{').unwrap() + start + 1;
+    let body_start = source[start..]
+        .find('{')
+        .ok_or("dispatch table opening brace missing")?
+        + start
+        + 1;
     let end = source[body_start..]
         .split_inclusive('\n')
         .scan(0, |offset, line| {
@@ -742,7 +751,11 @@ fn dispatch_symbols(source: &str) -> Result<Vec<String>, Box<dyn Error>> {
             *offset += line.len();
             Some((line_start, line))
         })
-        .find_map(|(offset, line)| (line.trim() == "}").then_some(body_start + offset))
+        .find_map(|(offset, line)| {
+            line.trim_start()
+                .starts_with('}')
+                .then_some(body_start + offset)
+        })
         .ok_or("dispatch table not closed")?;
     let mut symbols = Vec::new();
     for line in source[body_start..end].lines() {
@@ -769,6 +782,13 @@ mod tests {
     #[test]
     fn dispatch_table_parser_accepts_indented_closing_brace() {
         let source = "pub(crate) struct pdfium {\n    pub FPDF_InitLibrary: fn(),\n    }\n";
+
+        assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
+    }
+
+    #[test]
+    fn dispatch_table_parser_accepts_closing_brace_with_trailing_comment() {
+        let source = "pub(crate) struct pdfium {\n    pub FPDF_InitLibrary: fn(),\n} // end of bindgen dispatch table\n";
 
         assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
     }
