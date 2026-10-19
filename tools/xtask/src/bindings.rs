@@ -431,7 +431,8 @@ fn regenerate_into(
             "pub(crate) struct pdfium {",
             1,
         );
-        let dispatch = format!("use super::types::*;\n{dispatch_body}");
+        let dispatch =
+            normalize_dispatch_source(&format!("use super::types::*;\n{dispatch_body}"))?;
         let symbols = dispatch_symbols(&dispatch).map_err(|error| {
             format!(
                 "Could not parse dispatch table for '{}': {error}",
@@ -732,6 +733,7 @@ fn split_parameters(text: &str) -> Vec<String> {
             '{' => brace += 1,
             '}' => brace -= 1,
             '<' => angle += 1,
+            '>' if text[..index].ends_with('-') => {}
             '>' => angle -= 1,
             ',' if paren == 0 && bracket == 0 && brace == 0 && angle == 0 => {
                 let value = text[start..index].trim();
@@ -803,9 +805,17 @@ fn dispatch_symbols(source: &str) -> Result<Vec<String>, Box<dyn Error>> {
     Ok(symbols)
 }
 
+fn normalize_dispatch_source(source: &str) -> Result<String, Box<dyn Error>> {
+    if source.lines().count() < 10 || source.lines().any(|line| line.len() > 4096) {
+        Ok(prettyplease::unparse(&syn::parse_file(source)?))
+    } else {
+        Ok(source.to_owned())
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{dispatch_symbols, parse_methods};
+    use super::{dispatch_symbols, normalize_dispatch_source, parse_methods, split_parameters};
 
     #[test]
     fn dispatch_table_parser_accepts_indented_closing_brace() {
@@ -833,6 +843,26 @@ mod tests {
         let source = "pub(crate) struct pdfium {\n    /// A documentation brace: }\n    pub FPDF_InitLibrary: fn(),\n}\n";
 
         assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
+    }
+
+    #[test]
+    fn dispatch_parser_expands_a_compact_table_to_canonical_rust() {
+        let source = "pub(crate) struct pdfium { pub FPDF_InitLibrary: fn(), }";
+
+        let normalized = normalize_dispatch_source(source).unwrap();
+        assert!(normalized.lines().count() > 1);
+        assert_eq!(dispatch_symbols(&normalized).unwrap(), ["FPDF_InitLibrary"]);
+    }
+
+    #[test]
+    fn parameter_splitter_does_not_count_return_arrows_as_generic_closers() {
+        assert_eq!(
+            split_parameters("func: Option<unsafe extern \"C\" fn() -> time_t>, next: i32"),
+            [
+                "func: Option<unsafe extern \"C\" fn() -> time_t>",
+                "next: i32"
+            ]
+        );
     }
 
     #[test]

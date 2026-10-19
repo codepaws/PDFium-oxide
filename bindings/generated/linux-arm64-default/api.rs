@@ -2694,7 +2694,7 @@ impl crate::raw::RawApi<'_> {
     /// # Safety
     /// The caller must uphold the pointer validity, buffer size, ownership, and resource lifetime requirements of the pinned PDFium C declaration. Any callback and user data must remain valid for PDFium's documented retention period; callbacks must not unwind across C. Returned pointers and buffers keep PDFium's documented lifetime and are not extended by this crate.
     /// See the [pinned PDFium public API](https://pdfium.googlesource.com/pdfium/+/f51279699cb59754d1f49aef10eb8e825fe56532/public/) for `FSDK_SetTimeFunction`.
-    pub unsafe fn FSDK_SetTimeFunction(&self, func: ::core::option::Option<unsafe extern "C" fn() -> time_t>,) -> Result<crate::PdfiumCall<()>, crate::PdfiumError> {
+    pub unsafe fn FSDK_SetTimeFunction(&self, func: ::core::option::Option<unsafe extern "C" fn() -> time_t>) -> Result<crate::PdfiumCall<()>, crate::PdfiumError> {
         crate::runtime::call("FSDK_SetTimeFunction", crate::runtime::Phase::Initialized, |context| unsafe { context.dispatch.FSDK_SetTimeFunction(func) })
     }
     /// Calls `FSDK_SetLocaltimeFunction` through PDFium's serialized process coordinator.
@@ -2702,7 +2702,7 @@ impl crate::raw::RawApi<'_> {
     /// # Safety
     /// The caller must uphold the pointer validity, buffer size, ownership, and resource lifetime requirements of the pinned PDFium C declaration. Any callback and user data must remain valid for PDFium's documented retention period; callbacks must not unwind across C. Returned pointers and buffers keep PDFium's documented lifetime and are not extended by this crate.
     /// See the [pinned PDFium public API](https://pdfium.googlesource.com/pdfium/+/f51279699cb59754d1f49aef10eb8e825fe56532/public/) for `FSDK_SetLocaltimeFunction`.
-    pub unsafe fn FSDK_SetLocaltimeFunction(&self, func: ::core::option::Option<unsafe extern "C" fn(arg1: *const time_t) -> *mut tm>,) -> Result<crate::PdfiumCall<()>, crate::PdfiumError> {
+    pub unsafe fn FSDK_SetLocaltimeFunction(&self, func: ::core::option::Option<unsafe extern "C" fn(arg1: *const time_t) -> *mut tm>) -> Result<crate::PdfiumCall<()>, crate::PdfiumError> {
         crate::runtime::call("FSDK_SetLocaltimeFunction", crate::runtime::Phase::Initialized, |context| unsafe { context.dispatch.FSDK_SetLocaltimeFunction(func) })
     }
     /// Calls `FPDFDoc_GetPageMode` through PDFium's serialized process coordinator.
