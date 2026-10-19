@@ -1,4 +1,5 @@
 /target/
+/.worktrees/
 # Keep local implementation specifications and planning notes out of version control.
 /docs
 /bindings/generated/*/headers.i

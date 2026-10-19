@@ -20,7 +20,7 @@ Pass an explicit absolute path to `PdfiumConfig::new`; the crate does not search
 
 The crate serializes native operations through one process-wide call gate. Multi-call safe operations such as `Page::insert_text` retain the gate for their full sequence, so another safe crate operation cannot observe an intermediate state. This does not make a mutation transactional: an error can still leave PDFium's document changed. A synchronous attempt to call back into PDFium on the same thread returns `ReentrantCall` before waiting on that gate. Raw pointer and resource contracts remain the caller's responsibility, so generated raw methods are `unsafe`. Each returned `PdfiumCall<T>` includes the C return value and a numeric `FPDF_GetLastError` snapshot taken while the call gate is held. PDFium defines that error value only for selected failing calls, so it is diagnostic state rather than a universal success indicator.
 
-The PowerShell helper `scripts/test-runtime-smoke.ps1` downloads and verifies the pinned Windows x64 default and V8/XFA archives. The Bash helper `scripts/test-runtime-smoke.sh` does the same for Linux x64 and ARM64. Both verify release checksums, extract under ignored `target/`, and run the native smoke and document-workflow tests. Use `-Profile default`, `-Profile v8`, or `-Profile all` in PowerShell, or `--profile default`, `--profile v8`, or `--profile all` in Bash; use `-ForceDownload` or `--force-download` to fetch the archives again. Ordinary Cargo test runs skip native tests and do not require a PDFium library.
+The `cargo xtask test-runtime-smoke` command downloads and verifies pinned PDFium archives for the current Windows x64 or Linux x64/ARM64 host, extracts them under ignored `target/`, and runs the native smoke and document-workflow tests. Use `--profile default`, `--profile v8`, or `--profile all`; use `--force-download` to fetch the archives again. Ordinary Cargo test runs skip native tests and do not require a PDFium library.
 
 The selected Rust header profile describes available declarations; it does not establish which optional exports are present in the loaded binary. The loader checks those exports at runtime and exposes V8/XFA capability only when the complete optional export set is available. Skia availability is declared by the caller's build profile because it cannot be established from the same optional export check; selecting a profile that does not match the loaded library may cause PDFium initialization to fail. The application remains responsible for supplying a matching PDFium build. Do not initialize or call the same native PDFium library through a second loader or direct FFI while this crate owns it, since those calls bypass its process-wide lifecycle and serialization rules. `destroy_library` is an unsafe terminal operation and requires that all PDFium resources have been released and that no initialized calls will follow.
 
@@ -45,7 +45,11 @@ assert_eq!(snapshot.stride, snapshot.width as usize * 4);
 
 `open_document_from_bytes` accepts any value convertible to `Arc<[u8]>` and retains the bytes until PDFium closes the document. Passwords are optional UTF-8 strings. `Document`, `Page`, `TextPage`, and `Bitmap` are clonable owners; pages retain their document and text pages retain their page. Drop native owners before calling the unsafe terminal `destroy_library` method. Rendering returns BGRA32 bytes with straight alpha semantics; applications receive a stable copy from `Bitmap::snapshot`.
 
-The native workflow integration test is ignored during ordinary Cargo runs. The smoke scripts run it in a separate process from the loader-only smoke test and use the authored fixtures in `tests/fixtures/`.
+The native workflow integration test is ignored during ordinary Cargo runs. The xtask smoke command runs it in a separate process from the loader-only smoke test and uses the authored fixtures in `tests/fixtures/`.
+
+### Inspecting text segments
+
+`TextPage::segments()` returns `Result<Vec<TextSegment>, PdfiumError>`. Each segment contains an owned string and `f64` bounds (`left`, `bottom`, `right`, `top`) in page space, measured in PDF points. Each segment corresponds to a rectangle grouped by PDFium's line and text-style rules. The method preserves PDFium's rectangle order and coordinates; it does not split the results into its own lines or words. The returned values remain usable after the text page, page, and document are dropped.
 
 ### Inserting page text
 
@@ -64,7 +68,7 @@ cargo +1.99.1 fmt --all -- --check
 cargo +1.99.1 test --offline --locked --all-features
 ```
 
-To run the native PDFium smoke and document-workflow tests for both profiles, use `pwsh ./scripts/test-runtime-smoke.ps1 -Profile all` on Windows x64 or `bash scripts/test-runtime-smoke.sh --profile all` on Linux x64/ARM64. The helpers download the pinned binaries into `target/` and validate their published checksums before testing. CI also compiles all six supported target/profile combinations and checks binding reproducibility; see [the CI workflow](.github/workflows/ci.yml) and [binding maintenance notes](bindings/README.md).
+To run the native PDFium smoke and document-workflow tests for both profiles, use `cargo xtask test-runtime-smoke --profile all`. The command downloads the pinned binaries into `target/` and validates their published checksums before testing. CI also compiles all six supported target/profile combinations and checks binding reproducibility; see [the CI workflow](.github/workflows/ci.yml) and [binding maintenance notes](bindings/README.md).
 
 ## License
 

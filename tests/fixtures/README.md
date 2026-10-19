@@ -4,10 +4,10 @@
 
 `document-workflow-encrypted.pdf` is the AES-256 encrypted derivative. Its user password is `secret`; owner password is `owner-secret`.
 
-Regenerate both files with Python and qpdf:
+Regenerate the plain fixture with Cargo xtask, then use qpdf to create and check the encrypted derivative:
 
 ```sh
-python tests/fixtures/create_fixture.py
+cargo xtask create-fixture
 qpdf --encrypt secret owner-secret 256 -- tests/fixtures/document-workflow.pdf tests/fixtures/document-workflow-encrypted.pdf
 qpdf --check tests/fixtures/document-workflow.pdf
 qpdf --password=secret --check tests/fixtures/document-workflow-encrypted.pdf

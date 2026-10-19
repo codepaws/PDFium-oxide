@@ -32,7 +32,7 @@ jobs:
             --ignore-filename-regex 'bindings[/\\]generated' \
             --json --summary-only --output-path target/coverage/host/summary.json
       - name: Download and smoke test native PDFium
-        run: bash ./scripts/test-runtime-smoke.sh --profile default
+        run: cargo +1.99.1 xtask test-runtime-smoke --profile default
       - name: Generate default-profile native coverage
         env:
           PDFIUM_PATH: ${{ github.workspace }}/target/pdfium-smoke/linux-x64-default/lib/libpdfium.so
@@ -106,15 +106,14 @@ jobs:
   binding-verification:
     name: Binding audit and reproducibility
     runs-on: ubuntu-24.04
+    env:
+      WINDOWS_INCLUDE: /usr/x86_64-w64-mingw32/include
     steps:
       - uses: actions/checkout@v4
-      - name: Install pinned Rust and PowerShell
+      - name: Install pinned Rust toolchain and fetch locked dependencies
         run: |
           rustup toolchain install 1.99.1 --profile minimal
-          wget -q https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb -O /tmp/packages-microsoft-prod.deb
-          sudo dpkg -i /tmp/packages-microsoft-prod.deb
-          sudo apt-get update
-          sudo apt-get install -y powershell
+          cargo +1.99.1 fetch --locked
       - name: Install pinned Clang 21.1.8
         run: |
           curl --fail --location --retry 3 \
@@ -125,34 +124,23 @@ jobs:
           echo "$RUNNER_TEMP/llvm-21.1.8/bin" >> "$GITHUB_PATH"
           echo "LIBCLANG_PATH=$RUNNER_TEMP/llvm-21.1.8/lib" >> "$GITHUB_ENV"
           "$RUNNER_TEMP/llvm-21.1.8/bin/clang" --version
+      - name: Install MinGW Windows headers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mingw-w64-x86-64-dev
       - name: Install pinned bindgen-cli 0.72.1
         run: cargo +1.99.1 install bindgen-cli --version 0.72.1 --locked
       - name: Fetch pinned PDFium public headers
-        shell: bash
-        run: |
-          source_dir="$GITHUB_WORKSPACE/target/pdfium-source-pinned"
-          mkdir -p "$source_dir"
-          git -C "$source_dir" init
-          git -C "$source_dir" remote add origin https://pdfium.googlesource.com/pdfium/
-          git -C "$source_dir" sparse-checkout init --cone
-          git -C "$source_dir" sparse-checkout set public
-          git -C "$source_dir" fetch --depth=1 --filter=blob:none origin f51279699cb59754d1f49aef10eb8e825fe56532
-          git -C "$source_dir" checkout --detach FETCH_HEAD
-          test "$(git -C "$source_dir" rev-parse HEAD)" = f51279699cb59754d1f49aef10eb8e825fe56532
+        run: cargo +1.99.1 xtask fetch-pdfium-source
       - name: Check generated runtime bindings
-        shell: pwsh
-        run: ./scripts/tests/check-runtime-binding-output.ps1
+        run: cargo +1.99.1 xtask check-bindings
       - name: Audit generated symbols against pinned PDFium headers
-        shell: pwsh
-        run: ./scripts/tests/check-generated-symbol-count.ps1
+        run: cargo +1.99.1 xtask audit-bindings --pdfium-source "$GITHUB_WORKSPACE/target/pdfium-source-pinned"
       - name: Validate binding generator rejection paths
-        shell: pwsh
-        run: ./scripts/tests/check-binding-generator.ps1 -PdfiumSource "$env:GITHUB_WORKSPACE/target/pdfium-source-pinned" -BindgenPath (Get-Command bindgen).Source
+        run: cargo +1.99.1 xtask check-generator --pdfium-source "$GITHUB_WORKSPACE/target/pdfium-source-pinned" --bindgen bindgen --clang clang
       - name: Regenerate and require no checked-in changes
-        shell: pwsh
         run: |
-          ./scripts/regenerate-bindings.ps1 -PdfiumSource "$env:GITHUB_WORKSPACE/target/pdfium-source-pinned" -BindgenPath (Get-Command bindgen).Source -ClangPath (Get-Command clang).Source
-          if ($LASTEXITCODE -ne 0) { throw 'Binding regeneration failed.' }
+          cargo +1.99.1 xtask regenerate-bindings --pdfium-source "$GITHUB_WORKSPACE/target/pdfium-source-pinned" --bindgen bindgen --clang clang
           git diff --exit-code -- bindings/generated
 
   native-smoke:
@@ -163,38 +151,23 @@ jobs:
         include:
           - platform: Windows x64
             runner: windows-2025
-            shell: pwsh
             profile: default
-            command: ./scripts/test-runtime-smoke.ps1 -Profile default
           - platform: Windows x64
             runner: windows-2025
-            shell: pwsh
             profile: v8
-            command: ./scripts/test-runtime-smoke.ps1 -Profile v8
           - platform: Linux x64
             runner: ubuntu-24.04
-            shell: bash
             profile: default
-            command: bash ./scripts/test-runtime-smoke.sh --profile default
           - platform: Linux x64
             runner: ubuntu-24.04
-            shell: bash
             profile: v8
-            command: bash ./scripts/test-runtime-smoke.sh --profile v8
           - platform: Linux ARM64
             runner: ubuntu-24.04-arm
-            shell: bash
             profile: default
-            command: bash ./scripts/test-runtime-smoke.sh --profile default
           - platform: Linux ARM64
             runner: ubuntu-24.04-arm
-            shell: bash
             profile: v8
-            command: bash ./scripts/test-runtime-smoke.sh --profile v8
     runs-on: ${{ matrix.runner }}
-    defaults:
-      run:
-        shell: ${{ matrix.shell }}
     steps:
       - uses: actions/checkout@v4
       - name: Install pinned Rust toolchain
@@ -202,4 +175,4 @@ jobs:
       - name: Fetch locked dependencies
         run: cargo +1.99.1 fetch --locked
       - name: Run pinned PDFium native smoke
-        run: ${{ matrix.command }}
+        run: cargo +1.99.1 xtask test-runtime-smoke --profile ${{ matrix.profile }}
