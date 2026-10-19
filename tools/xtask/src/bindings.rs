@@ -739,24 +739,12 @@ fn dispatch_symbols(source: &str) -> Result<Vec<String>, Box<dyn Error>> {
     let start = source
         .find("pub(crate) struct pdfium {")
         .ok_or("dispatch table missing")?;
-    let body_start = source[start..]
+    let opening = source[start..]
         .find('{')
         .ok_or("dispatch table opening brace missing")?
-        + start
-        + 1;
-    let end = source[body_start..]
-        .split_inclusive('\n')
-        .scan(0, |offset, line| {
-            let line_start = *offset;
-            *offset += line.len();
-            Some((line_start, line))
-        })
-        .find_map(|(offset, line)| {
-            line.trim_start()
-                .starts_with('}')
-                .then_some(body_start + offset)
-        })
-        .ok_or("dispatch table not closed")?;
+        + start;
+    let body_start = opening + 1;
+    let end = matching(source, opening, '{', '}').map_err(|_| "dispatch table not closed")?;
     let mut symbols = Vec::new();
     for line in source[body_start..end].lines() {
         let Some(rest) = line.trim().strip_prefix("pub ") else {
@@ -789,6 +777,13 @@ mod tests {
     #[test]
     fn dispatch_table_parser_accepts_closing_brace_with_trailing_comment() {
         let source = "pub(crate) struct pdfium {\n    pub FPDF_InitLibrary: fn(),\n} // end of bindgen dispatch table\n";
+
+        assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
+    }
+
+    #[test]
+    fn dispatch_table_parser_accepts_a_same_line_closing_brace() {
+        let source = "pub(crate) struct pdfium { pub FPDF_InitLibrary: fn(), }\n";
 
         assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
     }
