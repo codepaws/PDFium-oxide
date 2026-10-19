@@ -251,8 +251,7 @@ pub fn regenerate(root: &Path, args: &[String]) -> Result<(), Box<dyn Error>> {
     validate_bindgen_version(&bindgen_version_output)?;
     let bindgen_version = bindgen_version_output.trim().to_owned();
     let clang_output = command_text(&clang, &["--version"])?;
-    let clang_version = clang_output.lines().next().unwrap_or_default().to_owned();
-    validate_clang_version(&clang_version)?;
+    let clang_version = canonical_clang_version(&clang_output)?;
     let resource = command_text(&clang, &["-print-resource-dir"])?;
     let resource_include = Path::new(resource.trim()).join("include");
     if !resource_include.join("stddef.h").is_file() {
@@ -806,7 +805,7 @@ fn dispatch_symbols(source: &str) -> Result<Vec<String>, Box<dyn Error>> {
 
 #[cfg(test)]
 mod tests {
-    use super::{dispatch_symbols, parse_methods, split_parameters};
+    use super::{canonical_clang_version, dispatch_symbols, parse_methods, split_parameters};
 
     #[test]
     fn dispatch_table_parser_accepts_indented_closing_brace() {
@@ -844,6 +843,21 @@ mod tests {
                 "func: Option<unsafe extern \"C\" fn() -> time_t>",
                 "next: i32"
             ]
+        );
+    }
+
+    #[test]
+    fn clang_version_canonicalization_ignores_build_suffixes() {
+        assert_eq!(
+            canonical_clang_version(
+                "clang version 21.1.8 (https://github.com/llvm/llvm-project abc123)\nTarget: x86_64"
+            )
+            .unwrap(),
+            "clang version 21.1.8"
+        );
+        assert_eq!(
+            canonical_clang_version("Ubuntu clang version 18.1.3 (1ubuntu1)").unwrap(),
+            "clang version 18.1.3"
         );
     }
 
@@ -936,7 +950,7 @@ pub fn check_generator(root: &Path, args: &[String]) -> Result<(), Box<dyn Error
             "incorrect bindgen version",
         )?;
         ensure_rejected(
-            validate_clang_version("gcc (no clang version)"),
+            canonical_clang_version("gcc (no clang version)"),
             "unrecognized Clang version",
         )?;
 
@@ -1074,17 +1088,18 @@ fn validate_bindgen_version(version: &str) -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn validate_clang_version(version: &str) -> Result<(), Box<dyn Error>> {
-    if version
-        .split_whitespace()
-        .collect::<Vec<_>>()
+fn canonical_clang_version(output: &str) -> Result<String, Box<dyn Error>> {
+    let words = output.split_whitespace().collect::<Vec<_>>();
+    let version_index = words
         .windows(2)
-        .any(|words| words == ["clang", "version"])
-    {
-        Ok(())
-    } else {
-        Err(format!("Unrecognized Clang version output: {version}").into())
-    }
+        .position(|pair| pair == ["clang", "version"])
+        .map(|index| index + 2)
+        .ok_or_else(|| format!("Unrecognized Clang version output: {output}"))?;
+    let version = words
+        .get(version_index)
+        .filter(|version| version.chars().next().is_some_and(|ch| ch.is_ascii_digit()))
+        .ok_or_else(|| format!("Unrecognized Clang version output: {output}"))?;
+    Ok(format!("clang version {version}"))
 }
 
 fn validate_source(source: &Path) -> Result<(), Box<dyn Error>> {
