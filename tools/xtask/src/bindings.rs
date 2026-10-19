@@ -636,6 +636,10 @@ fn parse_methods(source: &str) -> Result<BTreeMap<String, Method>, Box<dyn Error
                 .collect::<String>();
             compact != "&self" && compact != "&mutself"
         });
+        let params = params
+            .into_iter()
+            .map(|param| normalize_parameter(&param))
+            .collect::<Result<Vec<_>, _>>()?;
         let body = source[close + 1..]
             .find('{')
             .ok_or_else(|| format!("method body missing for {name}"))?
@@ -644,6 +648,7 @@ fn parse_methods(source: &str) -> Result<BTreeMap<String, Method>, Box<dyn Error
         let mut ret = source[close + 1..body].trim().to_owned();
         if ret.starts_with("->") {
             ret = ret[2..].trim().to_owned();
+            ret = normalize_return_type(&ret)?;
         } else {
             ret = "()".into();
         }
@@ -663,6 +668,39 @@ fn parse_methods(source: &str) -> Result<BTreeMap<String, Method>, Box<dyn Error
         cursor = body + 1;
     }
     Ok(methods)
+}
+
+fn normalize_parameter(parameter: &str) -> Result<String, Box<dyn Error>> {
+    let source = format!("fn __pdfium_parameter({parameter}) {{}}\n");
+    let file = syn::parse_file(&source)?;
+    let formatted = prettyplease::unparse(&file);
+    let opening = formatted
+        .find('(')
+        .ok_or("formatted parameter has no opening parenthesis")?;
+    let closing = matching(&formatted, opening, '(', ')')?;
+    Ok(formatted[opening + 1..closing]
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" "))
+    .map(|parameter| parameter.trim_end_matches(',').to_owned())
+}
+
+fn normalize_return_type(return_type: &str) -> Result<String, Box<dyn Error>> {
+    let source = format!("fn __pdfium_return() -> {return_type} {{}}\n");
+    let file = syn::parse_file(&source)?;
+    let formatted = prettyplease::unparse(&file);
+    let arrow = formatted
+        .find("->")
+        .ok_or("formatted return type has no arrow")?
+        + 2;
+    let body = formatted[arrow..]
+        .find(" {")
+        .map(|index| arrow + index)
+        .ok_or("formatted return type has no function body")?;
+    Ok(formatted[arrow..body]
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" "))
 }
 
 fn matching(text: &str, opening: usize, left: char, right: char) -> Result<usize, Box<dyn Error>> {
@@ -806,6 +844,22 @@ mod tests {
         assert_eq!(
             methods["FPDF_InitLibraryWithConfig"].0,
             ["config: FPDF_LIBRARY_CONFIG"]
+        );
+    }
+
+    #[test]
+    fn method_parser_normalizes_bindgen_token_spacing() {
+        let source = "impl pdfium { pub unsafe fn FPDF_LoadMemDocument(data_buf : * const :: core :: ffi :: c_void) -> :: core :: ffi :: c_int {} pub unsafe fn FSDK_SetTimeFunction(func: ::core::option::Option<unsafe extern \"C\" fn() -> time_t>) {} }";
+
+        let methods = parse_methods(source).unwrap();
+        assert_eq!(
+            methods["FPDF_LoadMemDocument"].0,
+            ["data_buf: *const ::core::ffi::c_void"]
+        );
+        assert_eq!(methods["FPDF_LoadMemDocument"].1, "::core::ffi::c_int");
+        assert_eq!(
+            methods["FSDK_SetTimeFunction"].0,
+            ["func: ::core::option::Option<unsafe extern \"C\" fn() -> time_t>"]
         );
     }
 }

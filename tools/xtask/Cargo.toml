@@ -12,4 +12,5 @@ sha2 = "0.10"
 flate2 = "1"
 tar = "0.4"
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
-syn = { version = "3", features = ["full"] }
+syn = { version = "2", features = ["full"] }
+prettyplease = "0.2"
