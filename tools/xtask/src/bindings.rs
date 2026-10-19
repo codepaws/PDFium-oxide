@@ -628,7 +628,14 @@ fn parse_methods(source: &str) -> Result<BTreeMap<String, Method>, Box<dyn Error
             continue;
         }
         let close = matching(source, name_end, '(', ')')?;
-        let params = split_parameters(&source[name_end + 1..close]);
+        let mut params = split_parameters(&source[name_end + 1..close]);
+        params.retain(|param| {
+            let compact = param
+                .chars()
+                .filter(|character| !character.is_whitespace())
+                .collect::<String>();
+            compact != "&self" && compact != "&mutself"
+        });
         let body = source[close + 1..]
             .find('{')
             .ok_or_else(|| format!("method body missing for {name}"))?
@@ -642,13 +649,6 @@ fn parse_methods(source: &str) -> Result<BTreeMap<String, Method>, Box<dyn Error
         }
         let mut args = Vec::new();
         for param in &params {
-            let compact = param
-                .chars()
-                .filter(|character| !character.is_whitespace())
-                .collect::<String>();
-            if compact == "&self" || compact == "&mutself" {
-                continue;
-            }
             let argument = param
                 .split_once(':')
                 .map(|pair| pair.0.trim())
@@ -803,6 +803,10 @@ mod tests {
 
         let methods = parse_methods(source).unwrap();
         assert_eq!(methods["FPDF_InitLibraryWithConfig"].2, ["config"]);
+        assert_eq!(
+            methods["FPDF_InitLibraryWithConfig"].0,
+            ["config: FPDF_LIBRARY_CONFIG"]
+        );
     }
 }
 
