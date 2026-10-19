@@ -642,7 +642,11 @@ fn parse_methods(source: &str) -> Result<BTreeMap<String, Method>, Box<dyn Error
         }
         let mut args = Vec::new();
         for param in &params {
-            if param == "&self" || param == "&mut self" {
+            let compact = param
+                .chars()
+                .filter(|character| !character.is_whitespace())
+                .collect::<String>();
+            if compact == "&self" || compact == "&mutself" {
                 continue;
             }
             let argument = param
@@ -763,7 +767,7 @@ fn dispatch_symbols(source: &str) -> Result<Vec<String>, Box<dyn Error>> {
 
 #[cfg(test)]
 mod tests {
-    use super::dispatch_symbols;
+    use super::{dispatch_symbols, parse_methods};
 
     #[test]
     fn dispatch_table_parser_accepts_indented_closing_brace() {
@@ -791,6 +795,14 @@ mod tests {
         let source = "pub(crate) struct pdfium {\n    /// A documentation brace: }\n    pub FPDF_InitLibrary: fn(),\n}\n";
 
         assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
+    }
+
+    #[test]
+    fn method_parser_accepts_bindgen_formatted_shared_receiver() {
+        let source = "impl pdfium { pub unsafe fn FPDF_InitLibraryWithConfig(& self, config: FPDF_LIBRARY_CONFIG) {} }";
+
+        let methods = parse_methods(source).unwrap();
+        assert_eq!(methods["FPDF_InitLibraryWithConfig"].2, ["config"]);
     }
 }
 
