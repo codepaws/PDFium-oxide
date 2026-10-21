@@ -1,5 +1,4 @@
 use flate2::read::GzDecoder;
-use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use std::error::Error;
 use std::fs;
@@ -7,23 +6,9 @@ use std::io::Read;
 use std::path::{Component, Path};
 use std::process::Command;
 
-const RELEASE_TAG: &str = "chromium/8100";
 const RELEASE_NAME: &str = "PDFium 157.0.8100.0";
-const API_URL: &str =
-    "https://api.github.com/repos/bblanchon/pdfium-binaries/releases/tags/chromium%2F8100";
-
-#[derive(Deserialize)]
-struct Release {
-    name: String,
-    tag_name: String,
-    assets: Vec<Asset>,
-}
-#[derive(Deserialize)]
-struct Asset {
-    name: String,
-    digest: Option<String>,
-    browser_download_url: String,
-}
+const RELEASE_DOWNLOAD_URL: &str =
+    "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F8100";
 
 struct Profile {
     name: &'static str,
@@ -65,34 +50,13 @@ pub fn run(root: &Path, args: &[String]) -> Result<(), Box<dyn Error>> {
     let client = reqwest::blocking::Client::builder()
         .user_agent("PDFium-oxide-smoke-test")
         .build()?;
-    let release: Release = client.get(API_URL).send()?.error_for_status()?.json()?;
-    if release.name != RELEASE_NAME || release.tag_name != RELEASE_TAG {
-        return Err(format!(
-            "unexpected PDFium release metadata: {} ({})",
-            release.name, release.tag_name
-        )
-        .into());
-    }
     let fixture_root = root.join("target/pdfium-smoke");
     fs::create_dir_all(&fixture_root)?;
     for item in profiles {
-        let asset = release
-            .assets
-            .iter()
-            .find(|asset| asset.name == item.asset)
-            .ok_or_else(|| format!("release asset '{}' was not found", item.asset))?;
-        let expected_digest = format!("sha256:{}", item.sha256);
-        if asset.digest.as_deref() != Some(&expected_digest) {
-            return Err(format!(
-                "release digest mismatch for '{}': expected {}, got {:?}",
-                item.asset, expected_digest, asset.digest
-            )
-            .into());
-        }
         let archive = fixture_root.join(&item.asset);
         if force || !archive.is_file() {
             let mut response = client
-                .get(&asset.browser_download_url)
+                .get(release_asset_url(&item.asset))
                 .send()?
                 .error_for_status()?;
             let mut bytes = Vec::new();
@@ -157,6 +121,10 @@ fn host() -> Result<(&'static str, &'static str), Box<dyn Error>> {
         return Err("Windows native smoke currently supports x64 only".into());
     }
     Ok((os, arch))
+}
+
+fn release_asset_url(asset: &str) -> String {
+    format!("{RELEASE_DOWNLOAD_URL}/{asset}")
 }
 
 fn profiles(os: &str, arch: &str) -> Vec<Profile> {
@@ -236,4 +204,17 @@ fn run_cargo_tests(root: &Path, library: &Path, v8: bool) -> Result<(), Box<dyn 
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::release_asset_url;
+
+    #[test]
+    fn release_asset_url_targets_the_pinned_pdfium_release_directly() {
+        assert_eq!(
+            release_asset_url("pdfium-linux-x64.tgz"),
+            "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F8100/pdfium-linux-x64.tgz"
+        );
+    }
 }

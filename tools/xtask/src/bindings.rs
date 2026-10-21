@@ -251,8 +251,7 @@ pub fn regenerate(root: &Path, args: &[String]) -> Result<(), Box<dyn Error>> {
     validate_bindgen_version(&bindgen_version_output)?;
     let bindgen_version = bindgen_version_output.trim().to_owned();
     let clang_output = command_text(&clang, &["--version"])?;
-    let clang_version = clang_output.lines().next().unwrap_or_default().to_owned();
-    validate_clang_version(&clang_version)?;
+    let clang_version = canonical_clang_version(&clang_output)?;
     let resource = command_text(&clang, &["-print-resource-dir"])?;
     let resource_include = Path::new(resource.trim()).join("include");
     if !resource_include.join("stddef.h").is_file() {
@@ -432,7 +431,12 @@ fn regenerate_into(
             1,
         );
         let dispatch = format!("use super::types::*;\n{dispatch_body}");
-        let symbols = dispatch_symbols(&dispatch)?;
+        let symbols = dispatch_symbols(&dispatch).map_err(|error| {
+            format!(
+                "Could not parse dispatch table for '{}': {error}",
+                configuration.name
+            )
+        })?;
         if symbols.len() < 300 {
             return Err(format!(
                 "Only {} public API symbols were generated for '{}'.",
@@ -623,7 +627,18 @@ fn parse_methods(source: &str) -> Result<BTreeMap<String, Method>, Box<dyn Error
             continue;
         }
         let close = matching(source, name_end, '(', ')')?;
-        let params = split_parameters(&source[name_end + 1..close]);
+        let mut params = split_parameters(&source[name_end + 1..close]);
+        params.retain(|param| {
+            let compact = param
+                .chars()
+                .filter(|character| !character.is_whitespace())
+                .collect::<String>();
+            compact != "&self" && compact != "&mutself"
+        });
+        let params = params
+            .into_iter()
+            .map(|param| normalize_parameter(&param))
+            .collect::<Result<Vec<_>, _>>()?;
         let body = source[close + 1..]
             .find('{')
             .ok_or_else(|| format!("method body missing for {name}"))?
@@ -632,14 +647,12 @@ fn parse_methods(source: &str) -> Result<BTreeMap<String, Method>, Box<dyn Error
         let mut ret = source[close + 1..body].trim().to_owned();
         if ret.starts_with("->") {
             ret = ret[2..].trim().to_owned();
+            ret = normalize_return_type(&ret)?;
         } else {
             ret = "()".into();
         }
         let mut args = Vec::new();
         for param in &params {
-            if param == "&self" || param == "&mut self" {
-                continue;
-            }
             let argument = param
                 .split_once(':')
                 .map(|pair| pair.0.trim())
@@ -654,6 +667,39 @@ fn parse_methods(source: &str) -> Result<BTreeMap<String, Method>, Box<dyn Error
         cursor = body + 1;
     }
     Ok(methods)
+}
+
+fn normalize_parameter(parameter: &str) -> Result<String, Box<dyn Error>> {
+    let source = format!("fn __pdfium_parameter({parameter}) {{}}\n");
+    let file = syn::parse_file(&source)?;
+    let formatted = prettyplease::unparse(&file);
+    let opening = formatted
+        .find('(')
+        .ok_or("formatted parameter has no opening parenthesis")?;
+    let closing = matching(&formatted, opening, '(', ')')?;
+    Ok(formatted[opening + 1..closing]
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" "))
+    .map(|parameter| parameter.trim_end_matches(',').to_owned())
+}
+
+fn normalize_return_type(return_type: &str) -> Result<String, Box<dyn Error>> {
+    let source = format!("fn __pdfium_return() -> {return_type} {{}}\n");
+    let file = syn::parse_file(&source)?;
+    let formatted = prettyplease::unparse(&file);
+    let arrow = formatted
+        .find("->")
+        .ok_or("formatted return type has no arrow")?
+        + 2;
+    let body = formatted[arrow..]
+        .find(" {")
+        .map(|index| arrow + index)
+        .ok_or("formatted return type has no function body")?;
+    Ok(formatted[arrow..body]
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" "))
 }
 
 fn matching(text: &str, opening: usize, left: char, right: char) -> Result<usize, Box<dyn Error>> {
@@ -685,6 +731,7 @@ fn split_parameters(text: &str) -> Vec<String> {
             '{' => brace += 1,
             '}' => brace -= 1,
             '<' => angle += 1,
+            '>' if text[..index].ends_with('-') => {}
             '>' => angle -= 1,
             ',' if paren == 0 && bracket == 0 && brace == 0 && angle == 0 => {
                 let value = text[start..index].trim();
@@ -731,29 +778,23 @@ fn emit_impl(
 }
 
 fn dispatch_symbols(source: &str) -> Result<Vec<String>, Box<dyn Error>> {
-    let start = source
-        .find("pub(crate) struct pdfium {")
-        .ok_or("dispatch table missing")?;
-    let body_start = source[start..].find('{').unwrap() + start + 1;
-    let end = source[body_start..]
-        .split_inclusive('\n')
-        .scan(0, |offset, line| {
-            let line_start = *offset;
-            *offset += line.len();
-            Some((line_start, line))
+    let file = syn::parse_file(source)?;
+    let table = file
+        .items
+        .into_iter()
+        .find_map(|item| match item {
+            syn::Item::Struct(item) if item.ident == "pdfium" => Some(item),
+            _ => None,
         })
-        .find_map(|(offset, line)| (line.trim() == "}").then_some(body_start + offset))
-        .ok_or("dispatch table not closed")?;
+        .ok_or("dispatch table missing")?;
     let mut symbols = Vec::new();
-    for line in source[body_start..end].lines() {
-        let Some(rest) = line.trim().strip_prefix("pub ") else {
+    for field in table.fields {
+        let Some(name) = field.ident else {
             continue;
         };
-        let Some((name, _)) = rest.split_once(':') else {
-            continue;
-        };
+        let name = name.to_string();
         if name.starts_with("FPDF") || name.starts_with("FORM_") || name.starts_with("FSDK_") {
-            symbols.push(name.to_owned());
+            symbols.push(name);
         }
     }
     if symbols.iter().collect::<BTreeSet<_>>().len() != symbols.len() {
@@ -764,13 +805,88 @@ fn dispatch_symbols(source: &str) -> Result<Vec<String>, Box<dyn Error>> {
 
 #[cfg(test)]
 mod tests {
-    use super::dispatch_symbols;
+    use super::{canonical_clang_version, dispatch_symbols, parse_methods, split_parameters};
 
     #[test]
     fn dispatch_table_parser_accepts_indented_closing_brace() {
         let source = "pub(crate) struct pdfium {\n    pub FPDF_InitLibrary: fn(),\n    }\n";
 
         assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
+    }
+
+    #[test]
+    fn dispatch_table_parser_accepts_closing_brace_with_trailing_comment() {
+        let source = "pub(crate) struct pdfium {\n    pub FPDF_InitLibrary: fn(),\n} // end of bindgen dispatch table\n";
+
+        assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
+    }
+
+    #[test]
+    fn dispatch_table_parser_accepts_a_same_line_closing_brace() {
+        let source = "pub(crate) struct pdfium { pub FPDF_InitLibrary: fn(), }\n";
+
+        assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
+    }
+
+    #[test]
+    fn dispatch_table_parser_ignores_braces_inside_field_documentation() {
+        let source = "pub(crate) struct pdfium {\n    /// A documentation brace: }\n    pub FPDF_InitLibrary: fn(),\n}\n";
+
+        assert_eq!(dispatch_symbols(source).unwrap(), ["FPDF_InitLibrary"]);
+    }
+
+    #[test]
+    fn parameter_splitter_does_not_count_return_arrows_as_generic_closers() {
+        assert_eq!(
+            split_parameters("func: Option<unsafe extern \"C\" fn() -> time_t>, next: i32"),
+            [
+                "func: Option<unsafe extern \"C\" fn() -> time_t>",
+                "next: i32"
+            ]
+        );
+    }
+
+    #[test]
+    fn clang_version_canonicalization_ignores_build_suffixes() {
+        assert_eq!(
+            canonical_clang_version(
+                "clang version 21.1.8 (https://github.com/llvm/llvm-project abc123)\nTarget: x86_64"
+            )
+            .unwrap(),
+            "clang version 21.1.8"
+        );
+        assert_eq!(
+            canonical_clang_version("Ubuntu clang version 18.1.3 (1ubuntu1)").unwrap(),
+            "clang version 18.1.3"
+        );
+    }
+
+    #[test]
+    fn method_parser_accepts_bindgen_formatted_shared_receiver() {
+        let source = "impl pdfium { pub unsafe fn FPDF_InitLibraryWithConfig(& self, config: FPDF_LIBRARY_CONFIG) {} }";
+
+        let methods = parse_methods(source).unwrap();
+        assert_eq!(methods["FPDF_InitLibraryWithConfig"].2, ["config"]);
+        assert_eq!(
+            methods["FPDF_InitLibraryWithConfig"].0,
+            ["config: FPDF_LIBRARY_CONFIG"]
+        );
+    }
+
+    #[test]
+    fn method_parser_normalizes_bindgen_token_spacing() {
+        let source = "impl pdfium { pub unsafe fn FPDF_LoadMemDocument(data_buf : * const :: core :: ffi :: c_void) -> :: core :: ffi :: c_int {} pub unsafe fn FSDK_SetTimeFunction(func: ::core::option::Option<unsafe extern \"C\" fn() -> time_t>) {} }";
+
+        let methods = parse_methods(source).unwrap();
+        assert_eq!(
+            methods["FPDF_LoadMemDocument"].0,
+            ["data_buf: *const ::core::ffi::c_void"]
+        );
+        assert_eq!(methods["FPDF_LoadMemDocument"].1, "::core::ffi::c_int");
+        assert_eq!(
+            methods["FSDK_SetTimeFunction"].0,
+            ["func: ::core::option::Option<unsafe extern \"C\" fn() -> time_t>"]
+        );
     }
 }
 
@@ -834,7 +950,7 @@ pub fn check_generator(root: &Path, args: &[String]) -> Result<(), Box<dyn Error
             "incorrect bindgen version",
         )?;
         ensure_rejected(
-            validate_clang_version("gcc (no clang version)"),
+            canonical_clang_version("gcc (no clang version)"),
             "unrecognized Clang version",
         )?;
 
@@ -972,17 +1088,18 @@ fn validate_bindgen_version(version: &str) -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn validate_clang_version(version: &str) -> Result<(), Box<dyn Error>> {
-    if version
-        .split_whitespace()
-        .collect::<Vec<_>>()
+fn canonical_clang_version(output: &str) -> Result<String, Box<dyn Error>> {
+    let words = output.split_whitespace().collect::<Vec<_>>();
+    let version_index = words
         .windows(2)
-        .any(|words| words == ["clang", "version"])
-    {
-        Ok(())
-    } else {
-        Err(format!("Unrecognized Clang version output: {version}").into())
-    }
+        .position(|pair| pair == ["clang", "version"])
+        .map(|index| index + 2)
+        .ok_or_else(|| format!("Unrecognized Clang version output: {output}"))?;
+    let version = words
+        .get(version_index)
+        .filter(|version| version.chars().next().is_some_and(|ch| ch.is_ascii_digit()))
+        .ok_or_else(|| format!("Unrecognized Clang version output: {output}"))?;
+    Ok(format!("clang version {version}"))
 }
 
 fn validate_source(source: &Path) -> Result<(), Box<dyn Error>> {
