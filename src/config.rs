@@ -2,6 +2,11 @@ use std::path::{Path, PathBuf};
 
 use crate::error::PdfiumError;
 
+#[cfg(target_os = "windows")]
+const PDFIUM_LIBRARY_FILENAME: &str = "pdfium.dll";
+#[cfg(target_os = "linux")]
+const PDFIUM_LIBRARY_FILENAME: &str = "libpdfium.so";
+
 /// PDFium's renderer selected during process-wide initialization.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Renderer {
@@ -89,6 +94,37 @@ impl PdfiumConfig {
             ));
         }
         Self::new(PathBuf::from(path))
+    }
+
+    /// Creates a configuration from `PDFIUM_LIBRARY_PATH`, or from the standard
+    /// PDFium library filename in the current working directory when the
+    /// environment variable is unset.
+    ///
+    /// An empty, relative, or otherwise invalid environment value is an error
+    /// and does not trigger the current-directory fallback. This checks only
+    /// `pdfium.dll` on Windows or `libpdfium.so` on Linux;
+    /// it does not search `PATH` or subdirectories. Because this can load native
+    /// code from the current working directory, use it only when that directory
+    /// is trusted.
+    pub fn from_env_or_current_dir() -> Result<Self, PdfiumError> {
+        if std::env::var_os("PDFIUM_LIBRARY_PATH").is_some() {
+            return Self::from_env();
+        }
+
+        let current_dir = std::env::current_dir().map_err(|error| {
+            PdfiumError::Initialization(format!(
+                "could not determine the current directory while locating PDFium: {error}"
+            ))
+        })?;
+        let library_path = current_dir.join(PDFIUM_LIBRARY_FILENAME);
+        if !library_path.is_file() {
+            return Err(PdfiumError::Initialization(format!(
+                "PDFIUM_LIBRARY_PATH is not set and no PDFium library was found at '{}'; set PDFIUM_LIBRARY_PATH to an absolute path or place {PDFIUM_LIBRARY_FILENAME} in the current directory",
+                library_path.display()
+            )));
+        }
+
+        Self::new(library_path)
     }
 
     /// Creates a configuration for an explicit absolute library path.

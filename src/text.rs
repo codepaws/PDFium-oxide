@@ -146,14 +146,38 @@ impl TextPage {
             segments
                 .try_reserve_exact(rect_count)
                 .map_err(|_| PdfiumError::Allocation { requested_bytes })?;
-            let requested_chars =
-                checked_allocation_bytes(char_count, std::mem::size_of::<CharacterRecord>())?;
-            let mut characters = Vec::new();
-            characters
-                .try_reserve_exact(char_count)
-                .map_err(|_| PdfiumError::Allocation {
-                    requested_bytes: requested_chars,
+            let characters = collect_character_records(char_count, |index| {
+                let index = checked_native_count_argument(index)?;
+                let (box_call, source_error) = calls.call("FPDFText_GetCharBox", |ctx| unsafe {
+                    let (mut left, mut right, mut bottom, mut top) = (0.0, 0.0, 0.0, 0.0);
+                    let ok = ctx.dispatch.FPDFText_GetCharBox(
+                        handle,
+                        index,
+                        &mut left,
+                        &mut right,
+                        &mut bottom,
+                        &mut top,
+                    );
+                    (ok, left, bottom, right, top)
                 })?;
+                if let Some(error) = source_error {
+                    return Err(error);
+                }
+                let (ok, left, bottom, right, top) = box_call.return_value;
+                if ok == 0 {
+                    return Ok((None, None));
+                }
+                let (unicode_call, source_error) = calls
+                    .call("FPDFText_GetUnicode", |ctx| unsafe {
+                        ctx.dispatch.FPDFText_GetUnicode(handle, index)
+                    })?;
+                if let Some(error) = source_error {
+                    return Err(error);
+                }
+                let scalar = char::from_u32(unicode_call.return_value)
+                    .filter(|_| unicode_call.return_value != 0);
+                Ok((Some((left, bottom, right, top)), scalar))
+            })?;
             for rect_index in 0..rect_count_arg {
                 let (rect_call, source_error) = calls.call("FPDFText_GetRect", |ctx| unsafe {
                     let (mut left, mut top, mut right, mut bottom) = (0.0, 0.0, 0.0, 0.0);
@@ -172,40 +196,6 @@ impl TextPage {
                 }
                 let (ok, left, bottom, right, top) = rect_call.return_value;
                 rectangle_result(ok, rect_call.last_error)?;
-                characters.clear();
-                for index in 0..char_count_arg {
-                    let (box_call, source_error) =
-                        calls.call("FPDFText_GetCharBox", |ctx| unsafe {
-                            let (mut left, mut right, mut bottom, mut top) = (0.0, 0.0, 0.0, 0.0);
-                            let ok = ctx.dispatch.FPDFText_GetCharBox(
-                                handle,
-                                index,
-                                &mut left,
-                                &mut right,
-                                &mut bottom,
-                                &mut top,
-                            );
-                            (ok, left, bottom, right, top)
-                        })?;
-                    if let Some(error) = source_error {
-                        return Err(error);
-                    }
-                    let (ok, l, b, r, t) = box_call.return_value;
-                    if ok == 0 {
-                        characters.push((None, None));
-                        continue;
-                    }
-                    let (unicode_call, source_error) = calls
-                        .call("FPDFText_GetUnicode", |ctx| unsafe {
-                            ctx.dispatch.FPDFText_GetUnicode(handle, index)
-                        })?;
-                    if let Some(error) = source_error {
-                        return Err(error);
-                    }
-                    let scalar = char::from_u32(unicode_call.return_value)
-                        .filter(|_| unicode_call.return_value != 0);
-                    characters.push((Some((l, b, r, t)), scalar));
-                }
                 let mut text = String::new();
                 let estimate = segment_text_capacity((left, bottom, right, top), &characters)?;
                 text.try_reserve_exact(estimate)
@@ -266,6 +256,24 @@ fn checked_allocation_bytes(count: usize, element_size: usize) -> Result<usize, 
         .ok_or(PdfiumError::Allocation {
             requested_bytes: usize::MAX,
         })
+}
+
+fn collect_character_records<F>(
+    count: usize,
+    mut fetch: F,
+) -> Result<Vec<CharacterRecord>, PdfiumError>
+where
+    F: FnMut(usize) -> Result<CharacterRecord, PdfiumError>,
+{
+    let requested_bytes = checked_allocation_bytes(count, std::mem::size_of::<CharacterRecord>())?;
+    let mut records = Vec::new();
+    records
+        .try_reserve_exact(count)
+        .map_err(|_| PdfiumError::Allocation { requested_bytes })?;
+    for index in 0..count {
+        records.push(fetch(index)?);
+    }
+    Ok(records)
 }
 
 fn decode_text(
@@ -395,9 +403,9 @@ fn segment_text_capacity(
 #[cfg(test)]
 mod tests {
     use super::{
-        checked_allocation_bytes, checked_native_count, checked_native_count_argument, decode_text,
-        rectangle_result, segment_contains_box, segment_counts, segment_text,
-        segment_text_capacity, SegmentCounts,
+        checked_allocation_bytes, checked_native_count, checked_native_count_argument,
+        collect_character_records, decode_text, rectangle_result, segment_contains_box,
+        segment_counts, segment_text, segment_text_capacity, SegmentCounts,
     };
     use crate::PdfiumError;
 
@@ -481,6 +489,27 @@ mod tests {
         ];
         assert_eq!(segment_text_capacity(rect, &chars).unwrap(), 4);
     }
+
+    #[test]
+    fn segments_collect_character_records_once_for_multiple_rectangles() {
+        let mut fetch_count = 0;
+        let characters = collect_character_records(3, |index| {
+            fetch_count += 1;
+            Ok(match index {
+                0 => (Some((0.0, 0.0, 2.0, 2.0)), Some('A')),
+                1 => (Some((3.0, 0.0, 5.0, 2.0)), Some('B')),
+                _ => (Some((6.0, 0.0, 8.0, 2.0)), Some('C')),
+            })
+        })
+        .unwrap();
+
+        let first_rect = (0.0, 0.0, 5.0, 2.0);
+        let second_rect = (6.0, 0.0, 8.0, 2.0);
+        assert_eq!(fetch_count, 3);
+        assert_eq!(segment_text(first_rect, &characters), "AB");
+        assert_eq!(segment_text(second_rect, &characters), "C");
+    }
+
     #[test]
     fn validates_counts_terminator_truncation_and_utf16() {
         assert_eq!(decode_text(0, &[0], 0).unwrap(), "");

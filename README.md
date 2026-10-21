@@ -1,77 +1,94 @@
 # PDFium-oxide
 
-PDFium-oxide is a permissively licensed Rust interface to [PDFium](https://pdfium.googlesource.com/pdfium/), Google's PDF rendering and document library. It is intended to give Rust applications a focused, safe API over PDFium's C interface without requiring each application to maintain its own bindings or native-library integration.
+PDFium-oxide is a Rust wrapper for [PDFium](https://pdfium.googlesource.com/pdfium/), Google's PDF rendering and document library. It provides checked, owned Rust workflows alongside access to the complete public PDFium C API.
 
-The crate's PDFium ABI baseline is pinned to **PDFium 157.0.8100.0**, built from `chromium/8100`, at official PDFium source commit `f51279699cb59754d1f49aef10eb8e825fe56532`. This is the version selected for this crate, not a promise that it is the newest upstream release. The immutable source identity and binary release are recorded in `Cargo.toml`; the crate exposes the version, branch, and source commit as constants. Checked-in bindings cover the default profile and the V8/XFA profile. The project pins Rust 1.99.1 in `rust-toolchain.toml` and declares Rust 1.99 as its minimum supported version.
+## How it works
 
-## Getting PDFium
+The application supplies a PDFium shared library (`pdfium.dll` or `libpdfium.so`). PDFium-oxide loads it at runtime, checks the exports needed by the selected build profile, and serializes native calls through one process-wide gate. Safe document, page, text, and bitmap handles retain their parent resources and close them when dropped. The raw C API remains `unsafe` because pointer, buffer, and lifetime requirements come from PDFium.
 
-PDFium-oxide does not redistribute PDFium binaries. Download the matching native library from the [bblanchon/pdfium-binaries release](https://github.com/bblanchon/pdfium-binaries/releases/tag/chromium%2F8100), selecting the archive for your operating system and architecture. For example, use the Windows x64 archive for `pdfium.dll`, Linux x64 for `libpdfium.so`, or Linux ARM64 for `libpdfium.so` on an ARM64 host. Keep the selected library available at the location configured by the application or loader.
+PDFium calls are synchronous. The crate does not sandbox documents or impose general CPU, memory, or time limits; an in-progress native call cannot be forcibly cancelled.
 
-Use the non-V8 archive unless an application specifically needs PDF JavaScript/XFA functionality. The binary distribution repository documents its platform variants and publishes release checksums and attestations.
+## Feature coverage
 
-## Platform scope
+### Available
 
-The initial native target matrix follows the binary releases: Windows x64, Linux x64, and Linux ARM64. Additional targets can be enabled when the binding and upstream binaries are verified together.
+- [x] Generated bindings for every public declaration in the pinned PDFium headers: Windows x64, Linux x64, and Linux ARM64, with default and V8/XFA profiles.
+- [x] Runtime loading, required-export checks, renderer/profile configuration, capability reporting, and process lifecycle management.
+- [x] Open PDFs from a path, owned bytes, or a custom seekable source; inspect pages and dimensions; save through a Rust `Write` implementation.
+- [x] Extract text and owned text segments with PDF-point bounds, grouped by PDFium's line and text-style rectangles.
+- [x] Render pages to BGRA pixels, with borrowed pixel views and owned snapshots.
+- [x] Insert text using PDF's 14 standard fonts.
 
-## Runtime loading
+### Deferred follow-on features
 
-Pass an explicit absolute path to `PdfiumConfig::new`; the crate does not search the current directory or `PATH`. Applications that opt into environment configuration can call `PdfiumConfig::from_env`, which reads `PDFIUM_LIBRARY_PATH` and requires a non-empty absolute path. An unset or empty variable returns an actionable configuration error, while a relative value returns `InvalidLibraryPath`. The helper preserves non-Unicode paths and does not change loader resolution. `Pdfium::prepare` loads the library and checks every required export for the selected target profile without initializing it. `PdfiumInit::initialize` initializes the process-owned instance. `Pdfium::load` combines those steps. The first successful configuration owns PDFium for the lifetime of the process; subsequent compatible calls reuse it, while a different path, profile, or renderer is rejected.
+- [ ] Higher-level safe form workflows (the raw C calls remain available through the unsafe API).
+- [ ] An asynchronous runtime or async-facing API.
+- [ ] Hard cancellation of an in-progress PDFium call.
 
-The crate serializes native operations through one process-wide call gate. Multi-call safe operations such as `Page::insert_text` retain the gate for their full sequence, so another safe crate operation cannot observe an intermediate state. This does not make a mutation transactional: an error can still leave PDFium's document changed. A synchronous attempt to call back into PDFium on the same thread returns `ReentrantCall` before waiting on that gate. Raw pointer and resource contracts remain the caller's responsibility, so generated raw methods are `unsafe`. Each returned `PdfiumCall<T>` includes the C return value and a numeric `FPDF_GetLastError` snapshot taken while the call gate is held. PDFium defines that error value only for selected failing calls, so it is diagnostic state rather than a universal success indicator.
+## Usage
 
-The `cargo xtask test-runtime-smoke` command downloads and verifies pinned PDFium archives for the current Windows x64 or Linux x64/ARM64 host, extracts them under ignored `target/`, and runs the native smoke and document-workflow tests. Use `--profile default`, `--profile v8`, or `--profile all`; use `--force-download` to fetch the archives again. Ordinary Cargo test runs skip native tests and do not require a PDFium library.
-
-The selected Rust header profile describes available declarations; it does not establish which optional exports are present in the loaded binary. The loader checks those exports at runtime and exposes V8/XFA capability only when the complete optional export set is available. Skia availability is declared by the caller's build profile because it cannot be established from the same optional export check; selecting a profile that does not match the loaded library may cause PDFium initialization to fail. The application remains responsible for supplying a matching PDFium build. Do not initialize or call the same native PDFium library through a second loader or direct FFI while this crate owns it, since those calls bypass its process-wide lifecycle and serialization rules. `destroy_library` is an unsafe terminal operation and requires that all PDFium resources have been released and that no initialized calls will follow.
-
-PDFium processes complex documents and this crate is not a sandbox. Treat input documents as untrusted: the crate does not provide general CPU, memory, or wall-clock limits, and cancellation is cooperative at operation boundaries rather than a guarantee that an in-progress native call can be stopped. Applications that need isolation or hard resource limits should run PDFium in a separately managed process with operating-system controls.
-
-## Safe document workflow
+Set `PDFIUM_LIBRARY_PATH` to the absolute path of the PDFium library, or put the platform library file in the current directory and use the opt-in fallback helper:
 
 ```rust,no_run
 use pdfium_oxide::{Pdfium, PdfiumConfig};
 use std::path::Path;
 
-let pdfium = Pdfium::load(PdfiumConfig::new("/absolute/path/to/libpdfium.so")?)?;
-let document = pdfium.open_document(Path::new("report.pdf"), None)?;
-let page = document.page(0)?;
-let size = page.size()?;
-let text = page.text()?;
-let snapshot = page.render(1200, 1600)?.snapshot()?;
-assert_eq!(snapshot.stride, snapshot.width as usize * 4);
-// snapshot.pixels is an independent, top-to-bottom BGRA byte vector.
-# Ok::<(), pdfium_oxide::PdfiumError>(())
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let pdfium = Pdfium::load(PdfiumConfig::from_env_or_current_dir()?)?;
+    let document = pdfium.open_document(Path::new("report.pdf"), None)?;
+    let page = document.page(0)?;
+
+    println!("Page size: {:?}", page.size()?);
+    println!("Text: {}", page.text()?);
+    let segments = page.text_page()?.segments()?;
+    let image = page.render(1200, 1600)?.snapshot()?;
+    println!(
+        "{} text segments; {}×{} BGRA image",
+        segments.len(), image.width, image.height
+    );
+    Ok(())
+}
 ```
 
-`open_document_from_bytes` accepts any value convertible to `Arc<[u8]>` and retains the bytes until PDFium closes the document. Passwords are optional UTF-8 strings. `Document`, `Page`, `TextPage`, and `Bitmap` are clonable owners; pages retain their document and text pages retain their page. Drop native owners before calling the unsafe terminal `destroy_library` method. Rendering returns BGRA32 bytes with straight alpha semantics; applications receive a stable copy from `Bitmap::snapshot`.
+`TextPage::segments()` returns owned text and PDF-point bounds for each rectangle PDFium groups by line and text style. The returned segments remain usable after the native document handles are dropped.
 
-The native workflow integration test is ignored during ordinary Cargo runs. The xtask smoke command runs it in a separate process from the loader-only smoke test and uses the authored fixtures in `tests/fixtures/`.
+## PDFium binary setup
 
-### Inspecting text segments
+The crate does **not** bundle or download PDFium at runtime. Download the matching archive from the [pinned `bblanchon/pdfium-binaries` release](https://github.com/bblanchon/pdfium-binaries/releases/tag/chromium%2F8100), choose the operating system, architecture, and profile you need, and extract the shared library. Use the V8/XFA archive only when your application needs those features and enable Cargo's `pdfium-v8` feature to select the matching declarations.
 
-`TextPage::segments()` returns `Result<Vec<TextSegment>, PdfiumError>`. Each segment contains an owned string and `f64` bounds (`left`, `bottom`, `right`, `top`) in page space, measured in PDF points. Each segment corresponds to a rectangle grouped by PDFium's line and text-style rules. The method preserves PDFium's rectangle order and coordinates; it does not split the results into its own lines or words. The returned values remain usable after the text page, page, and document are dropped.
+Set the library path in your environment:
 
-### Inserting page text
+```powershell
+$env:PDFIUM_LIBRARY_PATH = 'C:\path\to\pdfium.dll'
+```
 
-`Page::insert_text` adds text at a `Point` in PDF page coordinates using a `TextStyle` with one of PDF's 14 standard fonts, a positive font size, and an RGBA fill color. It changes the native page in place. Safe crate operations are serialized across its complete sequence, so a concurrent save runs before or after the insertion. Save the owning document with `Document::save_to_writer` to persist the change. An error after insertion may leave the page changed; the operation has no rollback guarantee.
+```sh
+export PDFIUM_LIBRARY_PATH=/path/to/libpdfium.so
+```
 
-### Saving through a Rust writer callback
+`PdfiumConfig::from_env()` requires `PDFIUM_LIBRARY_PATH` to be set. The opt-in `PdfiumConfig::from_env_or_current_dir()` uses that variable when present; otherwise, it checks only `pdfium.dll` (Windows) or `libpdfium.so` (Linux) directly in the current working directory. It does not search `PATH` or subdirectories. An empty or invalid environment value remains an error. Since this can load native code from the current directory, use it only when that directory is trusted. You can also pass an explicit absolute path to `PdfiumConfig::new`.
 
-`Document::save_to_writer` sends PDFium's output to a borrowed `std::io::Write` during one synchronous native call. The writer must not synchronously wait on another thread that calls PDFium; a direct same-thread re-entry is rejected. The method catches panics from the writer when built with `panic=unwind` and returns `PdfiumError::CallbackPanic`. With `panic=abort`, the process aborts and no panic conversion is possible. A writer error or failed save can leave partial bytes in the writer. The panic guarantee applies to this crate-owned adapter, not callbacks passed through the raw API or faults inside PDFium.
+For local native smoke tests, `cargo xtask test-runtime-smoke` downloads and verifies the pinned archive for the current supported host. This is a development helper; applications still provide their own PDFium binary.
 
-## Development and testing
+## PDFium version and licensing
 
-Install the pinned Rust toolchain with `rustup toolchain install 1.99.1 --profile minimal --component rustfmt`, then run the host checks:
+The checked-in bindings target PDFium **157.0.8100.0**, Chromium branch `chromium/8100`, source commit `f51279699cb59754d1f49aef10eb8e825fe56532`. This is the crate's pinned ABI baseline; it is not a promise that it is the newest upstream release.
+
+**PDFium's binary has its own BSD-style three-clause license.** If you redistribute a PDFium binary with your application, include the required PDFium copyright notice, license conditions, disclaimer, and applicable third-party notices. See [the PDFium license](licenses/PDFIUM-LICENSE) and [redistribution notices](THIRD-PARTY-NOTICES.md). The Rust wrapper itself is dual-licensed under MIT or Apache-2.0.
+
+## Development
+
+The repository pins Rust 1.99.1. Host checks:
 
 ```sh
 cargo +1.99.1 fmt --all -- --check
 cargo +1.99.1 test --offline --locked --all-features
 ```
 
-To run the native PDFium smoke and document-workflow tests for both profiles, use `cargo xtask test-runtime-smoke --profile all`. The command downloads the pinned binaries into `target/` and validates their published checksums before testing. CI also compiles all six supported target/profile combinations and checks binding reproducibility; see [the CI workflow](.github/workflows/ci.yml) and [binding maintenance notes](bindings/README.md).
+To run native tests for both PDFium profiles on the current supported host:
 
-## License
+```sh
+cargo +1.99.1 xtask test-runtime-smoke --profile all
+```
 
-PDFium-oxide's original Rust code is dual-licensed under MIT or Apache-2.0, at your option; see [LICENSE-MIT](LICENSE-MIT) and [LICENSE-APACHE](LICENSE-APACHE). These licenses apply to this repository's code only.
-
-PDFium is separately licensed under its BSD-style three-clause license. The required copyright notice, conditions, and disclaimer are reproduced in [licenses/PDFIUM-LICENSE](licenses/PDFIUM-LICENSE), with the upstream source identified there. Applications that redistribute a PDFium binary must include the PDFium notice and applicable third-party notices with their binary distribution. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for the redistribution guidance.
+Binding regeneration, symbol audits, and their prerequisites are documented in [the bindings guide](bindings/README.md). [CI](.github/workflows/ci.yml) checks host tests, native smoke tests, supported target/profile builds, and binding reproducibility.
